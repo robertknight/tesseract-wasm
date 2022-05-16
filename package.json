@@ -1,0 +1,25 @@
+{
+  "name": "tesseract-wasm",
+  "version": "0.1.0",
+  "description": "OCR library built on Tesseract",
+  "main": "node-test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robertknight/tesseract-wasm.git"
+  },
+  "author": "Robert Knight <robertknight@gmail.com>",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/robertknight/tesseract-wasm/issues"
+  },
+  "homepage": "https://github.com/robertknight/tesseract-wasm#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-virtual": "^2.1.0",
+    "rollup": "^2.73.0"
+  }
+}

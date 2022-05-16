@@ -59,3 +59,9 @@ build/tesseract.uptodate: build/leptonica.uptodate third_party/tesseract
 	(cd build/tesseract && $(EMSDK_DIR)/emmake make -j4)
 	(cd build/tesseract && $(EMSDK_DIR)/emmake make install)
 	touch build/tesseract.uptodate
+
+build/ocr-lib.js: src/lib.cpp
+	$(EMSDK_DIR)/emcc src/lib.cpp -sMODULARIZE=1 -sEXPORTED_RUNTIME_METHODS=ccall -Iinstall/include/ -Linstall/lib/ -ltesseract -lleptonica -o $@
+
+build/test-app.js: src/test-app.js build/ocr-lib.js
+	node_modules/.bin/rollup -c rollup-test-app.config.js
