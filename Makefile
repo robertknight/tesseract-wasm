@@ -15,7 +15,7 @@ build:
 	mkdir -p build/
 
 third_party/emsdk:
-	git clone --depth 1 https://github.com/emscripten-core/emsdk.git third_party/emsdk
+	git clone --depth 1 https://github.com/emscripten-core/emsdk.git $@
 
 build/emsdk.uptodate: build third_party/emsdk
 	third_party/emsdk/emsdk install latest
@@ -24,7 +24,7 @@ build/emsdk.uptodate: build third_party/emsdk
 
 third_party/leptonica:
 	mkdir -p third_party/leptonica
-	git clone --depth 1 https://github.com/DanBloomberg/leptonica.git third_party/leptonica
+	git clone --depth 1 https://github.com/DanBloomberg/leptonica.git $@
 
 build/leptonica.uptodate: third_party/leptonica build/emsdk.uptodate
 	mkdir -p build/leptonica
@@ -46,12 +46,12 @@ TESSERACT_FLAGS=\
 
 third_party/tesseract:
 	mkdir -p third_party/tesseract
-	git clone --depth 1 https://github.com/tesseract-ocr/tesseract.git third_party/tesseract
+	git clone --depth 1 https://github.com/tesseract-ocr/tesseract.git $@
 	(cd third_party/tesseract && git apply ../../patches/tesseract.diff)
 
 third_party/tessdata_fast:
 	mkdir -p third_party/tessdata_fast
-	git clone --depth 1 https://github.com/tesseract-ocr/tessdata_fast.git third_party/tessdata_fast
+	git clone --depth 1 https://github.com/tesseract-ocr/tessdata_fast.git $@
 
 build/tesseract.uptodate: build/leptonica.uptodate third_party/tesseract
 	mkdir -p build/tesseract
