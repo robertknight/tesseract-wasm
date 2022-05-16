@@ -10,7 +10,10 @@ export default {
     format: "esm",
   },
   plugins: [
+    // Stub out the Node imports that Emscripten's JS references. It will only
+    // try to actually use these in Node.
     virtual({
+      child_process: "",
       fs: "",
       path: "",
     }),

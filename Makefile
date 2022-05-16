@@ -11,13 +11,18 @@ all: build/tesseract.uptodate third_party/tessdata_fast
 clean:
 	rm -rf build install
 
+# nb. This is an order-only dependency in other targets.
 build:
 	mkdir -p build/
+
+.PHONY: format
+format:
+	clang-format -i --style=google src/*.cpp
 
 third_party/emsdk:
 	git clone --depth 1 https://github.com/emscripten-core/emsdk.git $@
 
-build/emsdk.uptodate: build third_party/emsdk
+build/emsdk.uptodate: third_party/emsdk | build
 	third_party/emsdk/emsdk install latest
 	third_party/emsdk/emsdk activate latest
 	touch build/emsdk.uptodate
@@ -37,6 +42,7 @@ TESSERACT_FLAGS=\
   -DBUILD_TRAINING_TOOLS=OFF \
   -DDISABLE_CURL=ON \
   -DDISABLED_LEGACY_ENGINE=ON \
+  -DENABLE_LTO=ON \
   -DGRAPHICS_DISABLED=ON \
   -DHAVE_AVX2=OFF \
   -DHAVE_AVX512F=OFF \
@@ -60,8 +66,13 @@ build/tesseract.uptodate: build/leptonica.uptodate third_party/tesseract
 	(cd build/tesseract && $(EMSDK_DIR)/emmake make install)
 	touch build/tesseract.uptodate
 
-build/ocr-lib.js: src/lib.cpp
-	$(EMSDK_DIR)/emcc src/lib.cpp -sMODULARIZE=1 -sEXPORTED_RUNTIME_METHODS=ccall -Iinstall/include/ -Linstall/lib/ -ltesseract -lleptonica -o $@
+build/ocr-lib.js: src/lib.cpp build/tesseract.uptodate
+	$(EMSDK_DIR)/emcc src/lib.cpp \
+		-sMODULARIZE=1 -sEXPORTED_RUNTIME_METHODS=ccall \
+		-sINITIAL_MEMORY=64MB \
+		-sMAXIMUM_MEMORY=128MB \
+		-Iinstall/include/ -Linstall/lib/ -ltesseract -lleptonica -lembind \
+		-o $@
 
 build/test-app.js: src/test-app.js build/ocr-lib.js
 	node_modules/.bin/rollup -c rollup-test-app.config.js

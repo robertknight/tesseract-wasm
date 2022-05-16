@@ -1,68 +1,58 @@
+#include <emscripten/bind.h>
 #include <emscripten/emscripten.h>
-#include <tesseract/baseapi.h>
 #include <leptonica/allheaders.h>
+#include <tesseract/baseapi.h>
 
 #include <memory>
 #include <string>
+#include <vector>
+
+using namespace emscripten;
 
 class OCREngine {
-public:
-  OCREngine()
-    : m_tesseract(new tesseract::TessBaseAPI())
-  {
+ public:
+  OCREngine() : m_tesseract(new tesseract::TessBaseAPI()) {}
+
+  ~OCREngine() { m_tesseract->End(); }
+
+  std::string Version() const { return m_tesseract->Version(); }
+
+  // TODO - Replace int result with something meaningful
+  int LoadModel(const std::string& model_data) {
+    std::vector<std::string> vars_vec;
+    std::vector<std::string> vars_values;
+
+    auto result = m_tesseract->Init(
+        model_data.data(), model_data.size(), "eng", tesseract::OEM_DEFAULT,
+        nullptr /* configs */, 0 /* configs_size */, nullptr /* vars_vec */,
+        nullptr /* vars_values */, false /* set_only_non_debug_params */,
+        nullptr /* reader */
+    );
+
+    return result;
   }
 
-  ~OCREngine() {
-    m_tesseract->End();
+  std::string ExtractText(const std::string& image_data, int width, int height,
+                          int bytes_per_pixel, int bytes_per_line) {
+    // TODO - Sanity check values
+    m_tesseract->SetImage(
+        reinterpret_cast<const unsigned char*>(image_data.data()), width,
+        height, bytes_per_pixel, bytes_per_line);
+    m_tesseract->SetRectangle(0, 0, width, height);
+
+    m_tesseract->Recognize(nullptr /* monitor */);
+    return std::string(m_tesseract->GetUTF8Text());
   }
 
-  const char* Version() const {
-    return m_tesseract->Version();
-  }
-
-  bool Init() {
-    // TODO - Pass in training data
-    return m_tesseract->Init(NULL, "eng");
-  }
-
-  std::string Run(const char* image_data, int image_len) {
-    // TODO - Convert image to `Pix`
-
-    // Open input image with leptonica library
-    /* Pix *image = pixRead("/usr/src/tesseract/testing/phototest.tif"); */
-    /* api->SetImage(image); */
-    // Get OCR result
-    auto outText = m_tesseract->GetUTF8Text();
-    delete[] outText;
-
-    return "dummy result";
-    // Destroy used object and release memory
-    /* api->End(); */
-    /* delete api; */
-    /* delete [] outText; */
-    /* pixDestroy(&image); */
-  }
-
-  private:
-    std::unique_ptr<tesseract::TessBaseAPI> m_tesseract;
+ private:
+  std::unique_ptr<tesseract::TessBaseAPI> m_tesseract;
 };
 
 #define OCRLIB_EXPORT extern "C"
 
-OCRLIB_EXPORT OCREngine* EMSCRIPTEN_KEEPALIVE OCREngine_Create() {
-  auto engine = new OCREngine();
-  engine->Init();
-  return engine;
-}
-
-OCRLIB_EXPORT const char* EMSCRIPTEN_KEEPALIVE OCREngine_Version(OCREngine* engine) {
-  return engine->Version();
-}
-
-OCRLIB_EXPORT void EMSCRIPTEN_KEEPALIVE OCREngine_Destroy(OCREngine* engine) {
-  delete engine;
-}
-
-OCRLIB_EXPORT void EMSCRIPTEN_KEEPALIVE OCREngine_Run(OCREngine* engine, const char* image_data, int image_len) {
-  engine->Run(image_data, image_len);
+EMSCRIPTEN_BINDINGS(ocrlib) {
+  class_<OCREngine>("OCREngine")
+      .constructor<>()
+      .function("loadModel", &OCREngine::LoadModel)
+      .function("extractText", &OCREngine::ExtractText);
 }
