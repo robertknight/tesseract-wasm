@@ -1,7 +1,3 @@
 build/
 install/
-
-# Third-party code
-emsdk/
-leptonica/
-tesseract/
+third_party/
