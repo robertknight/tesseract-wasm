@@ -1,0 +1,41 @@
+diff --git a/src/api/baseapi.cpp b/src/api/baseapi.cpp
+index f78894ce..7ff3c14f 100644
+--- a/src/api/baseapi.cpp
++++ b/src/api/baseapi.cpp
+@@ -23,6 +23,10 @@
+ #  include "config_auto.h"
+ #endif
+ 
++#if defined(__EMSCRIPTEN__)
++#undef HAVE_LIBCURL
++#endif
++
+ #include "boxword.h"    // for BoxWord
+ #include "coutln.h"     // for C_OUTLINE_IT, C_OUTLINE_LIST
+ #include "dawg_cache.h" // for DawgCache
+diff --git a/src/arch/simddetect.cpp b/src/arch/simddetect.cpp
+index 8c8605c3..8a489341 100644
+--- a/src/arch/simddetect.cpp
++++ b/src/arch/simddetect.cpp
+@@ -31,6 +31,10 @@
+ #undef HAVE_FRAMEWORK_ACCELERATE
+ #endif
+ 
++#if defined(__EMSCRIPTEN__)
++#undef HAVE_FRAMEWORK_ACCELERATE
++#endif
++
+ #if defined(HAVE_FRAMEWORK_ACCELERATE)
+ 
+ // Use Apple Accelerate framework.
+@@ -41,8 +45,10 @@
+ #endif
+ 
+ #if defined(HAVE_AVX) || defined(HAVE_AVX2) || defined(HAVE_FMA) || defined(HAVE_SSE4_1)
++#if !defined(__EMSCRIPTEN__)
+ #  define HAS_CPUID
+ #endif
++#endif
+ 
+ #if defined(HAS_CPUID)
+ #  if defined(__GNUC__)
