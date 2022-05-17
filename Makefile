@@ -81,11 +81,19 @@ build/tesseract.uptodate: build/leptonica.uptodate third_party/tesseract
 	(cd build/tesseract && $(EMSDK_DIR)/emmake make install)
 	touch build/tesseract.uptodate
 
+# emcc flags. `-Os` minifies the JS wrapper and optimises WASM code size.
+# We also disable filesystem support to reduce the JS wrapper size.
+# Enabling memory growth is important since loading document images may
+# require large blocks of memory.
+EMCC_FLAGS =\
+  -Os \
+  -sFILESYSTEM=0 \
+  -sMODULARIZE=1 \
+  -sALLOW_MEMORY_GROWTH \
+  -sMAXIMUM_MEMORY=128MB
+
 build/ocr-lib.js: src/lib.cpp build/tesseract.uptodate
-	$(EMSDK_DIR)/emcc src/lib.cpp \
-		-sMODULARIZE=1 -sEXPORTED_RUNTIME_METHODS=ccall \
-		-sALLOW_MEMORY_GROWTH \
-		-sMAXIMUM_MEMORY=128MB \
+	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
 		-Iinstall/include/ -Linstall/lib/ -ltesseract -lleptonica -lembind \
 		-o $@
 
