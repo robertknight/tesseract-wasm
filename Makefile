@@ -1,11 +1,6 @@
 EMSDK_DIR=$(PWD)/third_party/emsdk/upstream/emscripten
 INSTALL_DIR=$(PWD)/install
 
-LEPTONICA_FLAGS=\
-	-DLIBWEBP_SUPPORT=OFF \
-	-DOPENJPEG_SUPPORT=OFF \
-	-DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
-
 all: build/tesseract.uptodate third_party/tessdata_fast
 
 clean:
@@ -27,6 +22,13 @@ build/emsdk.uptodate: third_party/emsdk | build
 	third_party/emsdk/emsdk activate latest
 	touch build/emsdk.uptodate
 
+# Compile flags for Leptonica. These turn off support for various image formats to
+# reduce size. We don't need this since the browser includes this functionality.
+LEPTONICA_FLAGS=\
+	-DLIBWEBP_SUPPORT=OFF \
+	-DOPENJPEG_SUPPORT=OFF \
+	-DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
+
 third_party/leptonica:
 	mkdir -p third_party/leptonica
 	git clone --depth 1 https://github.com/DanBloomberg/leptonica.git $@
@@ -38,6 +40,18 @@ build/leptonica.uptodate: third_party/leptonica build/emsdk.uptodate
 	cd build/leptonica && $(EMSDK_DIR)/emmake make install
 	touch build/leptonica.uptodate
 
+# Compile flags for Tesseract. These turn off support for unused features and
+# utility programs to reduce size and build times.
+#
+# We also turn off support for vector processing instructions because
+# EMCC/WASM doesn't support those. In browsers that support WebAssembly SIMD,
+# it is possible to use a Tesseract build with `HAVE_SSE4_1` enabled. This will
+# significantly improve performance, but a non-SIMD build would be needed for
+# older browsers. In addition to enabling `HAVE_SSE4_1` here, enabling SSE will
+# require changes to `SIMDDetect` in Tesseract to ensure that the SSE versions
+# of operations are actually used. Also the `-msimd128` compile flag needs to
+# be added to source files compiled with `-msse4.1` to avoid an error from
+# emcc. See https://github.com/emscripten-core/emscripten/issues/12714.
 TESSERACT_FLAGS=\
   -DBUILD_TRAINING_TOOLS=OFF \
   -DDISABLE_CURL=ON \
@@ -47,6 +61,7 @@ TESSERACT_FLAGS=\
   -DHAVE_AVX2=OFF \
   -DHAVE_AVX512F=OFF \
   -DHAVE_FMA=OFF \
+  -DHAVE_SSE4_1=OFF \
   -DLeptonica_DIR=$(INSTALL_DIR)/lib/cmake/leptonica \
   -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
 
@@ -69,7 +84,7 @@ build/tesseract.uptodate: build/leptonica.uptodate third_party/tesseract
 build/ocr-lib.js: src/lib.cpp build/tesseract.uptodate
 	$(EMSDK_DIR)/emcc src/lib.cpp \
 		-sMODULARIZE=1 -sEXPORTED_RUNTIME_METHODS=ccall \
-		-sINITIAL_MEMORY=64MB \
+		-sALLOW_MEMORY_GROWTH \
 		-sMAXIMUM_MEMORY=128MB \
 		-Iinstall/include/ -Linstall/lib/ -ltesseract -lleptonica -lembind \
 		-o $@
