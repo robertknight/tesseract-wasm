@@ -87,6 +87,7 @@ build/tesseract.uptodate: build/leptonica.uptodate third_party/tesseract
 # require large blocks of memory.
 EMCC_FLAGS =\
   -Os \
+  -sEXPORT_ES6 \
   -sFILESYSTEM=0 \
   -sMODULARIZE=1 \
   -sALLOW_MEMORY_GROWTH \
