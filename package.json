@@ -20,6 +20,10 @@
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-virtual": "^2.1.0",
+    "prettier": "^2.6.2",
     "rollup": "^2.73.0"
+  },
+  "dependencies": {
+    "comlink": "^4.3.1"
   }
 }

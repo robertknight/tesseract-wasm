@@ -1,7 +1,7 @@
 EMSDK_DIR=$(PWD)/third_party/emsdk/upstream/emscripten
 INSTALL_DIR=$(PWD)/install
 
-all: build/tesseract.uptodate third_party/tessdata_fast
+all: build/lib.js build/worker.js
 
 clean:
 	rm -rf build install
@@ -13,6 +13,7 @@ build:
 .PHONY: format
 format:
 	clang-format -i --style=google src/*.cpp
+	node_modules/.bin/prettier -w src/**/*.js
 
 third_party/emsdk:
 	git clone --depth 1 https://github.com/emscripten-core/emsdk.git $@
@@ -87,16 +88,15 @@ build/tesseract.uptodate: build/leptonica.uptodate third_party/tesseract
 # require large blocks of memory.
 EMCC_FLAGS =\
   -Os \
-  -sEXPORT_ES6 \
   -sFILESYSTEM=0 \
   -sMODULARIZE=1 \
   -sALLOW_MEMORY_GROWTH \
   -sMAXIMUM_MEMORY=128MB
 
-build/ocr-lib.js: src/lib.cpp build/tesseract.uptodate
+build/ocr-lib.js build/ocr-lib.wasm: src/lib.cpp build/tesseract.uptodate
 	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
 		-Iinstall/include/ -Linstall/lib/ -ltesseract -lleptonica -lembind \
 		-o $@
 
-build/test-app.js: src/test-app.js build/ocr-lib.js
-	node_modules/.bin/rollup -c rollup-test-app.config.js
+build/lib.js build/worker.js build/test-app.js: src/*.js build/ocr-lib.js
+	node_modules/.bin/rollup -c rollup.config.js
