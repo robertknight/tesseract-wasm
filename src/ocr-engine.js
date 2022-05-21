@@ -1,10 +1,22 @@
 import initOCRLib from "../build/ocr-lib";
 
 /**
+ * JS interface to a `std::vector` returned from a C++ method wrapped by
+ * Embind.
+ *
+ * @template T
+ * @typedef StdVector
+ * @prop {() => number} size
+ * @prop {(index: number) => T} get
+ */
+
+/**
  * @param {ImageBitmap} bitmap
  */
 function imageDataFromBitmap(bitmap) {
+  // @ts-expect-error - OffscreenCanvas API is missing
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+  /** @type {CanvasRenderingContext2D} */
   const context = canvas.getContext("2d");
   context.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height);
   return context.getImageData(0, 0, bitmap.width, bitmap.height);
@@ -12,6 +24,10 @@ function imageDataFromBitmap(bitmap) {
 
 /**
  * Create a JS array from a std::vector wrapper created by Embind.
+ *
+ * @template T
+ * @param {StdVector<T>} vec
+ * @return {T[]}
  */
 function jsArrayFromStdVector(vec) {
   const size = vec.size();
@@ -45,6 +61,9 @@ function jsArrayFromStdVector(vec) {
  *
  */
 export class OCREngine {
+  /**
+   * @param {any} ocrLib
+   */
   constructor(ocrLib) {
     this._ocrLib = ocrLib;
     this._engine = new ocrLib.OCREngine();
@@ -101,7 +120,7 @@ export class OCREngine {
    * provide much faster results if only the location of lines/words etc. on
    * the page is required, not the text content.
    *
-   * @param {TextUnit}
+   * @param {TextUnit} unit
    * @return {IntRect[]}
    */
   getBoundingBoxes(unit) {
@@ -114,7 +133,7 @@ export class OCREngine {
    * not already done, and return bounding boxes and text content for a given
    * unit of text.
    *
-   * @param {TextUnit}
+   * @param {TextUnit} unit
    * @return {TextRect[]}
    */
   getTextBoxes(unit) {
@@ -122,6 +141,7 @@ export class OCREngine {
     return jsArrayFromStdVector(this._engine.getText(textUnit));
   }
 
+  /** @param {TextUnit} unit */
   _textUnitForUnit(unit) {
     const { TextUnit } = this._ocrLib;
     switch (unit) {

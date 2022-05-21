@@ -1,6 +1,12 @@
 import * as comlink from "comlink";
 
 /**
+ * @typedef {import('./ocr-engine').IntRect} IntRect
+ * @typedef {import('./ocr-engine').TextRect} TextRect
+ * @typedef {import('./ocr-engine').TextUnit} TextUnit
+ */
+
+/**
  * High-level async API for performing OCR.
  */
 export class OCRClient {
@@ -41,19 +47,22 @@ export class OCRClient {
   /**
    * Load an image into the OCR engine for processing.
    *
-   * @param {ImageBitmap|ImageData}
+   * @param {ImageBitmap|ImageData} image
    */
   async loadImage(image) {
     // If the browser doesn't support OffscreenCanvas, we have to perform
     // ImageBitmap => ImageData conversion on the main thread.
     if (
       image instanceof ImageBitmap &&
+      // @ts-expect-error - OffscreenCanvas is missing from TS types
       typeof OffscreenCanvas === "undefined"
     ) {
       const canvas = document.createElement("canvas");
       canvas.width = image.width;
       canvas.height = image.height;
-      const context = canvas.getContext("2d");
+      const context = /** @type {CanvasRenderingContext2D} */ (
+        canvas.getContext("2d")
+      );
       context.drawImage(image, 0, 0, image.width, image.height);
       image = context.getImageData(0, 0, image.width, image.height);
     }
@@ -69,8 +78,8 @@ export class OCRClient {
    * provide much faster results if only the location of lines/words etc. on
    * the page is required, not the text content.
    *
-   * @param {TextUnit}
-   * @return {IntRect[]}
+   * @param {TextUnit} unit
+   * @return {Promise<IntRect[]>}
    */
   async getBoundingBoxes(unit) {
     const engine = await this._ocrEngine;
@@ -82,8 +91,8 @@ export class OCRClient {
    * not already done, and return bounding boxes and text content for a given
    * unit of text.
    *
-   * @param {TextUnit}
-   * @return {TextRect[]}
+   * @param {TextUnit} unit
+   * @return {Promise<TextRect[]>}
    */
   async getTextBoxes(unit) {
     const engine = await this._ocrEngine;

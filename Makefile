@@ -13,7 +13,7 @@ build:
 .PHONY: format
 format:
 	clang-format -i --style=google src/*.cpp
-	node_modules/.bin/prettier -w src/**/*.js
+	node_modules/.bin/prettier -w {examples,src}/**/*.js
 
 third_party/emsdk:
 	git clone --depth 1 https://github.com/emscripten-core/emsdk.git $@
@@ -99,6 +99,7 @@ build/ocr-lib.js build/ocr-lib.wasm: src/lib.cpp build/tesseract.uptodate
 	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
 		-Iinstall/include/ -Linstall/lib/ -ltesseract -lleptonica -lembind \
 		-o $@
+	cp src/ocr-lib.d.ts build/
 
-build/lib.js build/worker.js build/test-app.js: src/*.js build/ocr-lib.js
+build/lib.js build/worker.js build/test-app.js: src/*.js examples/*.js build/ocr-lib.js
 	node_modules/.bin/rollup -c rollup.config.js

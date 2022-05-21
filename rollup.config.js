@@ -45,7 +45,7 @@ export default [
     ],
   },
   {
-    input: "src/test-app.js",
+    input: "examples/test-app.js",
     output: {
       dir: "build/",
       entryFileNames: "[name].js",
