@@ -62,8 +62,9 @@ TESSERACT_FLAGS=\
   -DHAVE_AVX2=OFF \
   -DHAVE_AVX512F=OFF \
   -DHAVE_FMA=OFF \
-  -DHAVE_SSE4_1=OFF \
+  -DHAVE_SSE4_1=ON \
   -DLeptonica_DIR=$(INSTALL_DIR)/lib/cmake/leptonica \
+  -DCMAKE_CXX_FLAGS=-msimd128 \
   -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
 
 third_party/tesseract:
@@ -91,7 +92,8 @@ EMCC_FLAGS =\
   -sFILESYSTEM=0 \
   -sMODULARIZE=1 \
   -sALLOW_MEMORY_GROWTH \
-  -sMAXIMUM_MEMORY=128MB
+  -sMAXIMUM_MEMORY=128MB \
+  --post-js=src/ocr-lib-init.js
 
 build/ocr-lib.js build/ocr-lib.wasm: src/lib.cpp build/tesseract.uptodate
 	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
