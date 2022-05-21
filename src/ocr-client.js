@@ -6,6 +6,10 @@ import * as comlink from "comlink";
  * @typedef {import('./ocr-engine').TextUnit} TextUnit
  */
 
+function defaultWorkerURL() {
+  return new URL("./worker.js", import.meta.url).href;
+}
+
 /**
  * High-level async API for performing OCR.
  */
@@ -15,11 +19,11 @@ export class OCRClient {
    *
    * This will start a Web Worker in which the OCR operations will actually
    * be performed.
+   *
+   * @param {object} options
+   *   @param {string} [options.workerURL]
    */
-  constructor() {
-    // We load the non-module version of the library into the worker, because
-    // Firefox and Safari < 15 do not support modules in web workers.
-    const workerURL = new URL("./worker.js", import.meta.url);
+  constructor({ workerURL = defaultWorkerURL() } = {}) {
     this._worker = new Worker(workerURL);
     const workerAPI = comlink.wrap(this._worker);
     this._ocrEngine = workerAPI.createOCREngine();

@@ -1,10 +1,16 @@
 EMSDK_DIR=$(PWD)/third_party/emsdk/upstream/emscripten
 INSTALL_DIR=$(PWD)/install
 
-all: build/lib.js build/worker.js
+DIST_TARGETS=dist/tesseract-core.wasm dist/lib.js dist/worker.js
+
+all: $(DIST_TARGETS)
 
 clean:
-	rm -rf build install
+	rm -rf build dist install
+
+clean-lib:
+	rm build/*.{js,wasm}
+	rm -rf dist
 
 # nb. This is an order-only dependency in other targets.
 build:
@@ -52,13 +58,14 @@ build/leptonica.uptodate: third_party/leptonica build/emsdk.uptodate
 # require changes to `SIMDDetect` in Tesseract to ensure that the SSE versions
 # of operations are actually used. Also the `-msimd128` compile flag needs to
 # be added to source files compiled with `-msse4.1` to avoid an error from
-# emcc. See https://github.com/emscripten-core/emscripten/issues/12714.
+# emcc. See https://github.com/emscripten/emscripten/issues/12714.
 TESSERACT_FLAGS=\
   -DBUILD_TRAINING_TOOLS=OFF \
   -DDISABLE_CURL=ON \
   -DDISABLED_LEGACY_ENGINE=ON \
   -DENABLE_LTO=ON \
   -DGRAPHICS_DISABLED=ON \
+  -DHAVE_AVX=OFF \
   -DHAVE_AVX2=OFF \
   -DHAVE_AVX512F=OFF \
   -DHAVE_FMA=OFF \
@@ -88,18 +95,27 @@ build/tesseract.uptodate: build/leptonica.uptodate third_party/tesseract
 # Enabling memory growth is important since loading document images may
 # require large blocks of memory.
 EMCC_FLAGS =\
-  -Os \
+  -Os\
+  --no-entry\
   -sFILESYSTEM=0 \
   -sMODULARIZE=1 \
-  -sALLOW_MEMORY_GROWTH \
+  -sALLOW_MEMORY_GROWTH\
   -sMAXIMUM_MEMORY=128MB \
-  --post-js=src/ocr-lib-init.js
+  --post-js=src/tesseract-init.js
 
-build/ocr-lib.js build/ocr-lib.wasm: src/lib.cpp build/tesseract.uptodate
+build/tesseract-core.js build/tesseract-core.wasm: src/lib.cpp build/tesseract.uptodate
 	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
 		-Iinstall/include/ -Linstall/lib/ -ltesseract -lleptonica -lembind \
-		-o $@
-	cp src/ocr-lib.d.ts build/
+		-o build/tesseract-core.js
+	cp src/tesseract-core.d.ts build/
 
-build/lib.js build/worker.js build/test-app.js: src/*.js examples/*.js build/ocr-lib.js
+dist/tesseract-core.wasm: build/tesseract-core.wasm
+	mkdir -p dist/
+	cp $< $@
+
+dist/lib.js dist/worker.js: src/*.js build/tesseract-core.js
 	node_modules/.bin/rollup -c rollup.config.js
+
+.PHONY: examples
+examples: examples/*.js
+	node_modules/.bin/rollup -c rollup-examples.config.js

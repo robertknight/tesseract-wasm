@@ -6,7 +6,7 @@ export default [
   {
     input: "src/worker.js",
     output: {
-      dir: "build",
+      dir: "dist",
       entryFileNames: "worker.js",
 
       // nb. Compiled as a classic script because Firefox and Safari < 15 do
@@ -28,7 +28,7 @@ export default [
   {
     input: "src/index.js",
     output: {
-      dir: "build",
+      dir: "dist",
       entryFileNames: "lib.js",
       format: "esm",
     },
@@ -44,23 +44,5 @@ export default [
       commonJS(),
     ],
   },
-  {
-    input: "examples/test-app.js",
-    output: {
-      dir: "build/",
-      entryFileNames: "[name].js",
-      format: "esm",
-    },
-    plugins: [
-      // Stub out the Node imports that Emscripten's JS references. It will only
-      // try to actually use these in Node.
-      virtual({
-        child_process: "",
-        fs: "",
-        path: "",
-      }),
-      nodeResolve(),
-      commonJS(),
-    ],
-  },
+  
 ];

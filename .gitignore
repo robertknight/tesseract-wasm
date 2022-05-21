@@ -1,4 +1,5 @@
 build/
+dist/
 install/
 node_modules/
 third_party/

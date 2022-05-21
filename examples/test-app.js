@@ -1,6 +1,6 @@
-import { OCRClient } from "../src/ocr-client";
+import { OCRClient } from "../";
 
-const client = new OCRClient();
+const client = new OCRClient({ workerURL: '../dist/worker.js' });
 /** @type {Promise<void>} */
 let modelLoaded;
 

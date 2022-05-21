@@ -2,7 +2,8 @@
   "name": "tesseract-wasm",
   "version": "0.1.0",
   "description": "OCR library built on Tesseract",
-  "main": "node-test.js",
+  "type": "module",
+  "main": "dist/lib.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -29,5 +30,6 @@
   },
   "scripts": {
     "typecheck": "tsc"
-  }
+  },
+  "types": "dist/index.d.ts"
 }

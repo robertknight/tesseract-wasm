@@ -1,4 +1,5 @@
-import initOCRLib from "../build/ocr-lib";
+// @ts-ignore - Don't error if library hasn't been built yet.
+import initTesseractCore from "../build/tesseract-core";
 
 /**
  * JS interface to a `std::vector` returned from a C++ method wrapped by
@@ -62,11 +63,11 @@ function jsArrayFromStdVector(vec) {
  */
 export class OCREngine {
   /**
-   * @param {any} ocrLib
+   * @param {any} tessLib
    */
-  constructor(ocrLib) {
-    this._ocrLib = ocrLib;
-    this._engine = new ocrLib.OCREngine();
+  constructor(tessLib) {
+    this._tesseractLib = tessLib;
+    this._engine = new tessLib.OCREngine();
   }
 
   /**
@@ -143,7 +144,7 @@ export class OCREngine {
 
   /** @param {TextUnit} unit */
   _textUnitForUnit(unit) {
-    const { TextUnit } = this._ocrLib;
+    const { TextUnit } = this._tesseractLib;
     switch (unit) {
       case "word":
         return TextUnit.Word;
@@ -159,6 +160,6 @@ export class OCREngine {
  * Initialize the OCR library and return a new {@link OCREngine}.
  */
 export async function createOCREngine() {
-  const ocrLib = await initOCRLib();
-  return new OCREngine(ocrLib);
+  const tessLib = await initTesseractCore();
+  return new OCREngine(tessLib);
 }
