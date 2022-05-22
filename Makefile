@@ -29,7 +29,7 @@ checkformat:
 	node_modules/.bin/prettier --check {examples,src,test}/**/*.js
 
 .PHONY: test
-test:
+test: third_party/tessdata_fast
 	node test/node-test.js
 
 third_party/emsdk:
