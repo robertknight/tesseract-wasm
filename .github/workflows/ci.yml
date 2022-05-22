@@ -23,3 +23,5 @@ jobs:
       run: npm run-script typecheck
     - name: Check formatting
       run: make checkformat
+    - name: Run tests
+      run: make test
