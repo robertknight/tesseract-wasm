@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/lib.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "typecheck": "tsc"
   },
   "repository": {
     "type": "git",
@@ -23,13 +23,11 @@
     "@rollup/plugin-virtual": "^2.1.0",
     "prettier": "^2.6.2",
     "rollup": "^2.73.0",
+    "sharp": "^0.30.4",
     "typescript": "^4.6.4"
   },
   "dependencies": {
     "comlink": "^4.3.1"
-  },
-  "scripts": {
-    "typecheck": "tsc"
   },
   "types": "dist/index.d.ts"
 }
