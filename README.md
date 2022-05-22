@@ -1,7 +1,7 @@
 # tesseract-wasm
 
 A WebAssembly build of the [Tesseract](https://github.com/tesseract-ocr/tesseract)
-OCR library for use in the browser.
+OCR library for use in the browser, Node and other JS runtimes.
 
 ## Features
 
