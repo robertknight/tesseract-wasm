@@ -17,3 +17,5 @@ jobs:
       run: make lib
     - name: Build examples
       run: make examples
+    - name: Typecheck
+      run: npm run-script typecheck
