@@ -4,7 +4,8 @@ FALLBACK_INSTALL_DIR=$(INSTALL_DIR)/fallback
 
 DIST_TARGETS=dist/tesseract-core.wasm dist/tesseract-core-fallback.wasm dist/lib.js dist/worker.js
 
-all: $(DIST_TARGETS)
+.PHONY: lib
+lib: $(DIST_TARGETS)
 
 clean:
 	rm -rf build dist install
