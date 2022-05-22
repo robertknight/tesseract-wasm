@@ -7,7 +7,7 @@ import * as comlink from "comlink";
  */
 
 function defaultWorkerURL() {
-  return new URL("./worker.js", import.meta.url).href;
+  return new URL("./tesseract-worker.js", import.meta.url).href;
 }
 
 /**

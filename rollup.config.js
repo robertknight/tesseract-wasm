@@ -7,7 +7,7 @@ export default [
     input: "src/worker.js",
     output: {
       dir: "dist",
-      entryFileNames: "worker.js",
+      entryFileNames: "tesseract-worker.js",
 
       // nb. Compiled as a classic script because Firefox and Safari < 15 do
       // not support module workers. See https://caniuse.com/mdn-api_worker_worker_ecmascript_modules.
