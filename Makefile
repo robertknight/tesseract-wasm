@@ -21,12 +21,16 @@ build:
 .PHONY: format
 format:
 	clang-format -i --style=google src/*.cpp
-	node_modules/.bin/prettier -w {examples,src}/**/*.js
+	node_modules/.bin/prettier -w {examples,src,test}/**/*.js
 
 .PHONY: checkformat
 checkformat:
 	clang-format -Werror --dry-run --style=google src/*.cpp
-	node_modules/.bin/prettier --check {examples,src}/**/*.js
+	node_modules/.bin/prettier --check {examples,src,test}/**/*.js
+
+.PHONY: test
+test: third_party/tessdata_fast
+	node test/node-test.js
 
 third_party/emsdk:
 	git clone --depth 1 https://github.com/emscripten-core/emsdk.git $@
@@ -109,9 +113,15 @@ build/tesseract-fallback.uptodate: build/leptonica.uptodate third_party/tesserac
 # We also disable filesystem support to reduce the JS wrapper size.
 # Enabling memory growth is important since loading document images may
 # require large blocks of memory.
+#
+# The `ENVIRONMENT` option is set to "web", but the resulting binary can still
+# be used in Node, since the Node environment is effectively a superset of the
+# relevant web environment.
 EMCC_FLAGS =\
   -Os\
   --no-entry\
+  -sEXPORT_ES6 \
+  -sENVIRONMENT=web \
   -sFILESYSTEM=0 \
   -sMODULARIZE=1 \
   -sALLOW_MEMORY_GROWTH\
