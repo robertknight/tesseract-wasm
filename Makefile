@@ -109,9 +109,15 @@ build/tesseract-fallback.uptodate: build/leptonica.uptodate third_party/tesserac
 # We also disable filesystem support to reduce the JS wrapper size.
 # Enabling memory growth is important since loading document images may
 # require large blocks of memory.
+#
+# The `ENVIRONMENT` option is set to "web", but the resulting binary can still
+# be used in Node, since the Node environment is effectively a superset of the
+# relevant web environment.
 EMCC_FLAGS =\
   -Os\
   --no-entry\
+  -sEXPORT_ES6 \
+  -sENVIRONMENT=web \
   -sFILESYSTEM=0 \
   -sMODULARIZE=1 \
   -sALLOW_MEMORY_GROWTH\

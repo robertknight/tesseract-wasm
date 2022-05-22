@@ -101,16 +101,24 @@ export class OCREngine {
    * @param {ImageBitmap|ImageData} image
    */
   loadImage(image) {
-    const imageData =
-      image instanceof ImageBitmap ? imageDataFromBitmap(image) : image;
+    let imageData;
+    if (typeof ImageBitmap !== "undefined" && image instanceof ImageBitmap) {
+      imageData = imageDataFromBitmap(image);
+    } else {
+      imageData = /** @type {ImageData} */ (image);
+    }
 
-    this._engine.loadImage(
+    const result = this._engine.loadImage(
       imageData.data,
       imageData.width,
       imageData.height,
       4 /* bytesPerPixel */,
       imageData.width * 4 /* bytesPerLine */
     );
+
+    if (result !== 0) {
+      throw new Error("Failed to load image");
+    }
   }
 
   /**
@@ -182,19 +190,23 @@ function resolve(path, baseURL) {
 
 /**
  * Initialize the OCR library and return a new {@link OCREngine}.
+ *
+ * @param {object} options
+ *   @param {Uint8Array|ArrayBuffer} [options.wasmBinary]
  */
-export async function createOCREngine() {
-  const wasmPath = wasmSIMDSupported()
-    ? "./tesseract-core.wasm"
-    : "./tesseract-core-fallback.wasm";
+export async function createOCREngine({ wasmBinary } = {}) {
+  if (!wasmBinary) {
+    const wasmPath = wasmSIMDSupported()
+      ? "./tesseract-core.wasm"
+      : "./tesseract-core-fallback.wasm";
 
-  // nb. If this code is included in a non-ESM bundle, Rollup will replace
-  // `import.meta.url` with code that uses `document.currentScript` /
-  // `location.href`.
-  const wasmURL = resolve(wasmPath, import.meta.url);
-  const wasmBinaryResponse = await fetch(wasmURL);
-  const wasmBinary = await wasmBinaryResponse.arrayBuffer();
-
+    // nb. If this code is included in a non-ESM bundle, Rollup will replace
+    // `import.meta.url` with code that uses `document.currentScript` /
+    // `location.href`.
+    const wasmURL = resolve(wasmPath, import.meta.url);
+    const wasmBinaryResponse = await fetch(wasmURL);
+    wasmBinary = await wasmBinaryResponse.arrayBuffer();
+  }
   const tessLib = await initTesseractCore({ wasmBinary });
   return new OCREngine(tessLib);
 }
