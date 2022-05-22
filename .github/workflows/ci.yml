@@ -12,10 +12,14 @@ jobs:
         path: node_modules
         key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
     - name: Install
-      run: npm install
+      run: |
+        sudo apt-get install clang-format
+        npm install
     - name: Build library
       run: make lib
     - name: Build examples
       run: make examples
     - name: Typecheck
       run: npm run-script typecheck
+    - name: Check formatting
+      run: make checkformat

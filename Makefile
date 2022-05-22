@@ -23,6 +23,11 @@ format:
 	clang-format -i --style=google src/*.cpp
 	node_modules/.bin/prettier -w {examples,src}/**/*.js
 
+.PHONY: checkformat
+checkformat:
+	clang-format -Werror --dry-run --style=google src/*.cpp
+	node_modules/.bin/prettier --check {examples,src}/**/*.js
+
 third_party/emsdk:
 	git clone --depth 1 https://github.com/emscripten-core/emsdk.git $@
 
