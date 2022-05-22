@@ -64,6 +64,12 @@ build/leptonica.uptodate: third_party/leptonica build/emsdk.uptodate
 	cd build/leptonica && $(EMSDK_DIR)/emmake make install
 	touch build/leptonica.uptodate
 
+# Additional preprocessor defines for Tesseract.
+#
+# Defining `TESSERACT_IMAGEDATA_AS_PIX` disables some unnecessary internal use
+# of the PNG format. See Tesseract commit 6bcb941bcff5e73b62ecc8d2aa5691d3e0e7afc0.
+TESSERACT_DEFINES=-DTESSERACT_IMAGEDATA_AS_PIX
+
 # Compile flags for Tesseract. These turn off support for unused features and
 # utility programs to reduce size and build times.
 #
@@ -82,7 +88,7 @@ TESSERACT_FLAGS=\
   -DHAVE_FMA=OFF \
   -DHAVE_SSE4_1=ON \
   -DLeptonica_DIR=$(INSTALL_DIR)/lib/cmake/leptonica \
-  -DCMAKE_CXX_FLAGS=-msimd128 \
+  -DCMAKE_CXX_FLAGS="$(TESSERACT_DEFINES) -msimd128" \
   -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
 
 # Compile flags for fallback Tesseract build. This is for browsers that don't
@@ -90,7 +96,7 @@ TESSERACT_FLAGS=\
 TESSERACT_FALLBACK_FLAGS=$(TESSERACT_FLAGS) \
   -DHAVE_SSE4_1=OFF \
 	-DCMAKE_INSTALL_PREFIX=$(FALLBACK_INSTALL_DIR) \
-  -DCMAKE_CXX_FLAGS=
+  -DCMAKE_CXX_FLAGS=$(TESSERACT_DEFINES)
 
 # Tesseract commit is v5.1.0 plus additional fixes needed to compile against
 # the pinned Leptonica version.
