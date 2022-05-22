@@ -1,7 +1,8 @@
 EMSDK_DIR=$(PWD)/third_party/emsdk/upstream/emscripten
 INSTALL_DIR=$(PWD)/install
+FALLBACK_INSTALL_DIR=$(INSTALL_DIR)/fallback
 
-DIST_TARGETS=dist/tesseract-core.wasm dist/lib.js dist/worker.js
+DIST_TARGETS=dist/tesseract-core.wasm dist/tesseract-core-fallback.wasm dist/lib.js dist/worker.js
 
 all: $(DIST_TARGETS)
 
@@ -50,15 +51,9 @@ build/leptonica.uptodate: third_party/leptonica build/emsdk.uptodate
 # Compile flags for Tesseract. These turn off support for unused features and
 # utility programs to reduce size and build times.
 #
-# We also turn off support for vector processing instructions because
-# EMCC/WASM doesn't support those. In browsers that support WebAssembly SIMD,
-# it is possible to use a Tesseract build with `HAVE_SSE4_1` enabled. This will
-# significantly improve performance, but a non-SIMD build would be needed for
-# older browsers. In addition to enabling `HAVE_SSE4_1` here, enabling SSE will
-# require changes to `SIMDDetect` in Tesseract to ensure that the SSE versions
-# of operations are actually used. Also the `-msimd128` compile flag needs to
-# be added to source files compiled with `-msse4.1` to avoid an error from
-# emcc. See https://github.com/emscripten/emscripten/issues/12714.
+# 128-bit wide SIMD is enabled via `HAVE_SSE4_1` and the `-msimd128` flags. The
+# AVX flags are disabled because they require instructions beyond what WASM SIMD
+# supports.
 TESSERACT_FLAGS=\
   -DBUILD_TRAINING_TOOLS=OFF \
   -DDISABLE_CURL=ON \
@@ -73,6 +68,13 @@ TESSERACT_FLAGS=\
   -DLeptonica_DIR=$(INSTALL_DIR)/lib/cmake/leptonica \
   -DCMAKE_CXX_FLAGS=-msimd128 \
   -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
+
+# Compile flags for fallback Tesseract build. This is for browsers that don't
+# support WASM SIMD.
+TESSERACT_FALLBACK_FLAGS=$(TESSERACT_FLAGS) \
+  -DHAVE_SSE4_1=OFF \
+	-DCMAKE_INSTALL_PREFIX=$(FALLBACK_INSTALL_DIR) \
+  -DCMAKE_CXX_FLAGS=
 
 third_party/tesseract:
 	mkdir -p third_party/tesseract
@@ -90,6 +92,13 @@ build/tesseract.uptodate: build/leptonica.uptodate third_party/tesseract
 	(cd build/tesseract && $(EMSDK_DIR)/emmake make install)
 	touch build/tesseract.uptodate
 
+build/tesseract-fallback.uptodate: build/leptonica.uptodate third_party/tesseract
+	mkdir -p build/tesseract-fallback
+	(cd build/tesseract-fallback && $(EMSDK_DIR)/emcmake cmake ../../third_party/tesseract $(TESSERACT_FALLBACK_FLAGS))
+	(cd build/tesseract-fallback && $(EMSDK_DIR)/emmake make -j4)
+	(cd build/tesseract-fallback && $(EMSDK_DIR)/emmake make install)
+	touch build/tesseract-fallback.uptodate
+
 # emcc flags. `-Os` minifies the JS wrapper and optimises WASM code size.
 # We also disable filesystem support to reduce the JS wrapper size.
 # Enabling memory growth is important since loading document images may
@@ -103,17 +112,29 @@ EMCC_FLAGS =\
   -sMAXIMUM_MEMORY=128MB \
   --post-js=src/tesseract-init.js
 
+# Build main WASM binary for browsers that support WASM SIMD.
 build/tesseract-core.js build/tesseract-core.wasm: src/lib.cpp build/tesseract.uptodate
 	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
-		-Iinstall/include/ -Linstall/lib/ -ltesseract -lleptonica -lembind \
+		-I$(INSTALL_DIR)/include/ -L$(INSTALL_DIR)/lib/ -ltesseract -lleptonica -lembind \
 		-o build/tesseract-core.js
 	cp src/tesseract-core.d.ts build/
+
+# Build fallback WASM binary for browsers that don't support WASM SIMD. The JS
+# output from this build is not used.
+build/tesseract-core-fallback.js build/tesseract-core-fallback.wasm: src/lib.cpp build/tesseract-fallback.uptodate
+	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
+		-I$(INSTALL_DIR)/include/ -L$(FALLBACK_INSTALL_DIR)/lib/ -L$(INSTALL_DIR)/lib -ltesseract -lleptonica -lembind \
+		-o build/tesseract-core-fallback.js
 
 dist/tesseract-core.wasm: build/tesseract-core.wasm
 	mkdir -p dist/
 	cp $< $@
 
-dist/lib.js dist/worker.js: src/*.js build/tesseract-core.js
+dist/tesseract-core-fallback.wasm: build/tesseract-core-fallback.wasm
+	mkdir -p dist/
+	cp $< $@
+
+dist/lib.js dist/worker.js: src/*.js build/tesseract-core.js build/tesseract-core.wasm build/tesseract-core-fallback.wasm
 	node_modules/.bin/rollup -c rollup.config.js
 
 .PHONY: examples

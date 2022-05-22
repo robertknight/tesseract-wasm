@@ -11,7 +11,7 @@ export default [
 
       // nb. Compiled as a classic script because Firefox and Safari < 15 do
       // not support module workers. See https://caniuse.com/mdn-api_worker_worker_ecmascript_modules.
-      format: "iife",
+      format: "umd",
     },
     plugins: [
       // Stub out the Node imports that Emscripten's JS references. It will only

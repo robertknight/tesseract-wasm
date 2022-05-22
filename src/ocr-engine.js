@@ -155,11 +155,46 @@ export class OCREngine {
     }
   }
 }
+function wasmSIMDSupported() {
+  // Tiny WebAssembly file generated from the following source using `wat2wasm`:
+  //
+  // (module
+  //   (func (result v128)
+  //     i32.const 0
+  //     i8x16.splat
+  //     i8x16.popcnt
+  //   )
+  // )
+  const simdTest = Uint8Array.from([
+    0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1,
+    8, 0, 65, 0, 253, 15, 253, 98, 11,
+  ]);
+  return WebAssembly.validate(simdTest);
+}
+
+/**
+ * @param {string} path
+ * @param {string} baseURL
+ */
+function resolve(path, baseURL) {
+  return new URL(path, baseURL).href;
+}
 
 /**
  * Initialize the OCR library and return a new {@link OCREngine}.
  */
 export async function createOCREngine() {
-  const tessLib = await initTesseractCore();
+  const wasmPath = wasmSIMDSupported()
+    ? "./tesseract-core.wasm"
+    : "./tesseract-core-fallback.wasm";
+
+  // nb. If this code is included in a non-ESM bundle, Rollup will replace
+  // `import.meta.url` with code that uses `document.currentScript` /
+  // `location.href`.
+  const wasmURL = resolve(wasmPath, import.meta.url);
+  const wasmBinaryResponse = await fetch(wasmURL);
+  const wasmBinary = await wasmBinaryResponse.arrayBuffer();
+
+  const tessLib = await initTesseractCore({ wasmBinary });
   return new OCREngine(tessLib);
 }
