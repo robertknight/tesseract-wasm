@@ -12,8 +12,8 @@ This build has been optimized for use in the browser by:
   startup performance. The library and English training data require a ~2.1MB
   download (using Brotli compression).
 
-- Using [WebAssembly SIMD](https://v8.dev/features/simd) when available (Chrome
-  >= 91, Firefox >= 90, Safari ??) to improve text recognition performance.
+- Using [WebAssembly SIMD](https://v8.dev/features/simd) when available
+  (Chrome >= 91, Firefox >= 90, Safari ??) to improve text recognition performance.
 
 - Providing a high-level API that can be used to run web pages without blocking
   interaction and a low-level API that provides more control over execution.
@@ -47,7 +47,7 @@ latency per API call.
 
 ### Using OCRClient in a web page
 
-```html
+```js
 import { OCRClient } from 'tesseract-wasm';
 
 async function runOCR() {
