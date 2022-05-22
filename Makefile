@@ -32,8 +32,10 @@ checkformat:
 test: third_party/tessdata_fast
 	node test/node-test.js
 
+EMSDK_COMMIT=93f21c9ef30bab52de24f9d4ea3f2f377cf6326a
 third_party/emsdk:
 	git clone --depth 1 https://github.com/emscripten-core/emsdk.git $@
+	cd $@ && git fetch origin $(EMSDK_COMMIT) && git checkout $(EMSDK_COMMIT)
 
 build/emsdk.uptodate: third_party/emsdk | build
 	third_party/emsdk/emsdk install latest
@@ -47,9 +49,13 @@ LEPTONICA_FLAGS=\
 	-DOPENJPEG_SUPPORT=OFF \
 	-DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
 
+# The Leptonica commit is not a stable release because we need a recent (as of
+# 2022-05-22) commit where WEBP and JPEG support is optional.
+LEPTONICA_COMMIT=ac9a152c6f2ea048bb10660bacfc66181186b825
 third_party/leptonica:
 	mkdir -p third_party/leptonica
 	git clone --depth 1 https://github.com/DanBloomberg/leptonica.git $@
+	cd $@ && git fetch origin $(LEPTONICA_COMMIT) && git checkout $(LEPTONICA_COMMIT)
 
 build/leptonica.uptodate: third_party/leptonica build/emsdk.uptodate
 	mkdir -p build/leptonica
@@ -86,10 +92,14 @@ TESSERACT_FALLBACK_FLAGS=$(TESSERACT_FLAGS) \
 	-DCMAKE_INSTALL_PREFIX=$(FALLBACK_INSTALL_DIR) \
   -DCMAKE_CXX_FLAGS=
 
+# Tesseract commit is v5.1.0 plus additional fixes needed to compile against
+# the pinned Leptonica version.
+TESSERACT_COMMIT=f36c0d019be59cae3b96da0d89d870dbe83e9714
 third_party/tesseract:
 	mkdir -p third_party/tesseract
 	git clone --depth 1 https://github.com/tesseract-ocr/tesseract.git $@
-	(cd third_party/tesseract && git apply ../../patches/tesseract.diff)
+	cd $@ && git fetch origin $(TESSERACT_COMMIT) && git checkout $(TESSERACT_COMMIT)
+	cd $@ && git apply ../../patches/tesseract.diff
 
 third_party/tessdata_fast:
 	mkdir -p third_party/tessdata_fast
