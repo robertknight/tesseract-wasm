@@ -30,7 +30,7 @@ checkformat:
 
 .PHONY: test
 test: third_party/tessdata_fast
-	node test/node-test.js
+	node_modules/.bin/mocha
 
 EMSDK_COMMIT=93f21c9ef30bab52de24f9d4ea3f2f377cf6326a
 third_party/emsdk:
