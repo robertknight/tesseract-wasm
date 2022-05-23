@@ -25,6 +25,30 @@ describe("OCRClient", () => {
     ocr.destroy();
   });
 
+  it("extracts bounding boxes from image", async function () {
+    this.timeout(2_000);
+
+    const imageData = await loadImage(resolve("./test-page.jpg"));
+    await ocr.loadImage(imageData);
+
+    const boxes = await ocr.getBoundingBoxes("word");
+    assert.isTrue(boxes.length >= 640 && boxes.length < 650);
+    for (let box of boxes) {
+      assert.isNumber(box.left);
+      assert.isNumber(box.right);
+      assert.isNumber(box.top);
+      assert.isNumber(box.bottom);
+
+      assert.isTrue(box.left >= 0 && box.left <= imageData.width);
+      assert.isTrue(box.right >= 0 && box.right <= imageData.width);
+      assert.isTrue(box.right > box.left);
+
+      assert.isTrue(box.top >= 0 && box.top <= imageData.height);
+      assert.isTrue(box.bottom >= 0 && box.bottom <= imageData.height);
+      assert.isTrue(box.bottom > box.top);
+    }
+  });
+
   it("extracts text from image", async function () {
     this.timeout(10_000);
 
