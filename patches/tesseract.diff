@@ -1,34 +1,8 @@
-diff --git a/src/api/baseapi.cpp b/src/api/baseapi.cpp
-index f78894c..7ff3c14 100644
---- a/src/api/baseapi.cpp
-+++ b/src/api/baseapi.cpp
-@@ -23,6 +23,10 @@
- #  include "config_auto.h"
- #endif
- 
-+#if defined(__EMSCRIPTEN__)
-+#undef HAVE_LIBCURL
-+#endif
-+
- #include "boxword.h"    // for BoxWord
- #include "coutln.h"     // for C_OUTLINE_IT, C_OUTLINE_LIST
- #include "dawg_cache.h" // for DawgCache
 diff --git a/src/arch/simddetect.cpp b/src/arch/simddetect.cpp
-index 8c8605c..8a48934 100644
+index 8c8605c3..b53de86d 100644
 --- a/src/arch/simddetect.cpp
 +++ b/src/arch/simddetect.cpp
-@@ -31,6 +31,10 @@
- #undef HAVE_FRAMEWORK_ACCELERATE
- #endif
- 
-+#if defined(__EMSCRIPTEN__)
-+#undef HAVE_FRAMEWORK_ACCELERATE
-+#endif
-+
- #if defined(HAVE_FRAMEWORK_ACCELERATE)
- 
- // Use Apple Accelerate framework.
-@@ -41,8 +45,10 @@
+@@ -41,8 +41,10 @@
  #endif
  
  #if defined(HAVE_AVX) || defined(HAVE_AVX2) || defined(HAVE_FMA) || defined(HAVE_SSE4_1)
@@ -40,7 +14,7 @@ index 8c8605c..8a48934 100644
  #if defined(HAS_CPUID)
  #  if defined(__GNUC__)
 diff --git a/src/ccmain/pagesegmain.cpp b/src/ccmain/pagesegmain.cpp
-index f3edc81..33eac9c 100644
+index f3edc81a..33eac9c1 100644
 --- a/src/ccmain/pagesegmain.cpp
 +++ b/src/ccmain/pagesegmain.cpp
 @@ -224,7 +224,7 @@ int Tesseract::AutoPageSeg(PageSegMode pageseg_mode, BLOCK_LIST *blocks, TO_BLOC
@@ -85,7 +59,7 @@ index f3edc81..33eac9c 100644
    }
    if (!PSM_COL_FIND_ENABLED(pageseg_mode)) {
 diff --git a/src/ccmain/tesseractclass.cpp b/src/ccmain/tesseractclass.cpp
-index 1eabcc5..d4fee4f 100644
+index 1eabcc51..d4fee4fc 100644
 --- a/src/ccmain/tesseractclass.cpp
 +++ b/src/ccmain/tesseractclass.cpp
 @@ -481,8 +481,10 @@ Dict &Tesseract::getDict() {
@@ -120,7 +94,7 @@ index 1eabcc5..d4fee4f 100644
    ASSERT_HOST(splitter_.orig_pix());
    pix_binary_.destroy();
 diff --git a/src/ccmain/tesseractclass.h b/src/ccmain/tesseractclass.h
-index 94681ab..68cc910 100644
+index 94681ab6..68cc910a 100644
 --- a/src/ccmain/tesseractclass.h
 +++ b/src/ccmain/tesseractclass.h
 @@ -984,7 +984,7 @@ private:
