@@ -86,10 +86,10 @@ describe("OCREngine", () => {
     }
   });
 
-  it("extracts text from image", async function () {
+  it("extracts text boxes from image", async function () {
     this.timeout(10_000);
 
-    const imageData = await loadImage(resolve("./test-page.jpg"));
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
     ocr.loadImage(imageData);
 
     const text = ocr
@@ -99,7 +99,25 @@ describe("OCREngine", () => {
 
     const expectedPhrases = [
       "Image Thresholding for Optical Character Recognition and Other Applications Requiring Character Image Extraction",
-      "One of the most significant problems in Optical Character distribution",
+      "This thresholding is a critical step",
+    ];
+
+    for (let phrase of expectedPhrases) {
+      assert.include(text, phrase);
+    }
+  });
+
+  it("extracts text from image", async function () {
+    this.timeout(5_000);
+
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
+    ocr.loadImage(imageData);
+
+    const text = ocr.getText();
+
+    const expectedPhrases = [
+      "Image Thresholding for Optical Character Recognition and\nOther Applications Requiring Character Image Extraction",
+      "This thresholding is a critical step",
     ];
 
     for (let phrase of expectedPhrases) {
