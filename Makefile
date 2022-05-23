@@ -63,9 +63,9 @@ third_party/leptonica:
 
 build/leptonica.uptodate: third_party/leptonica build/emsdk.uptodate
 	mkdir -p build/leptonica
-	cd build/leptonica && $(EMSDK_DIR)/emcmake cmake ../../third_party/leptonica $(LEPTONICA_FLAGS)
-	cd build/leptonica && $(EMSDK_DIR)/emmake make -j4
-	cd build/leptonica && $(EMSDK_DIR)/emmake make install
+	cd build/leptonica && $(EMSDK_DIR)/emcmake cmake -G Ninja ../../third_party/leptonica $(LEPTONICA_FLAGS)
+	cd build/leptonica && $(EMSDK_DIR)/emmake ninja
+	cd build/leptonica && $(EMSDK_DIR)/emmake ninja install
 	touch build/leptonica.uptodate
 
 # Additional preprocessor defines for Tesseract.
@@ -117,16 +117,16 @@ third_party/tessdata_fast:
 
 build/tesseract.uptodate: build/leptonica.uptodate third_party/tesseract
 	mkdir -p build/tesseract
-	(cd build/tesseract && $(EMSDK_DIR)/emcmake cmake ../../third_party/tesseract $(TESSERACT_FLAGS))
-	(cd build/tesseract && $(EMSDK_DIR)/emmake make -j4)
-	(cd build/tesseract && $(EMSDK_DIR)/emmake make install)
+	(cd build/tesseract && $(EMSDK_DIR)/emcmake cmake -G Ninja ../../third_party/tesseract $(TESSERACT_FLAGS))
+	(cd build/tesseract && $(EMSDK_DIR)/emmake ninja)
+	(cd build/tesseract && $(EMSDK_DIR)/emmake ninja install)
 	touch build/tesseract.uptodate
 
 build/tesseract-fallback.uptodate: build/leptonica.uptodate third_party/tesseract
 	mkdir -p build/tesseract-fallback
-	(cd build/tesseract-fallback && $(EMSDK_DIR)/emcmake cmake ../../third_party/tesseract $(TESSERACT_FALLBACK_FLAGS))
-	(cd build/tesseract-fallback && $(EMSDK_DIR)/emmake make -j4)
-	(cd build/tesseract-fallback && $(EMSDK_DIR)/emmake make install)
+	(cd build/tesseract-fallback && $(EMSDK_DIR)/emcmake cmake -G Ninja ../../third_party/tesseract $(TESSERACT_FALLBACK_FLAGS))
+	(cd build/tesseract-fallback && $(EMSDK_DIR)/emmake ninja)
+	(cd build/tesseract-fallback && $(EMSDK_DIR)/emmake ninja install)
 	touch build/tesseract-fallback.uptodate
 
 # emcc flags. `-Os` minifies the JS wrapper and optimises WASM code size.
