@@ -110,11 +110,8 @@ class OCREngine {
     return boxes;
   }
 
-  std::vector<TextRect> GetText(TextUnit unit) {
-    if (!ocr_done_) {
-      tesseract_->Recognize(nullptr /* monitor */);
-      ocr_done_ = true;
-    }
+  std::vector<TextRect> GetTextBoxes(TextUnit unit) {
+    DoOCR();
     auto iter = unique_from_raw(tesseract_->GetIterator());
 
     auto level = iterator_level_from_unit(unit);
@@ -132,7 +129,19 @@ class OCREngine {
     return boxes;
   }
 
+  std::string GetText() {
+    DoOCR();
+    return string_from_raw(tesseract_->GetUTF8Text());
+  }
+
  private:
+  void DoOCR() {
+    if (!ocr_done_) {
+      tesseract_->Recognize(nullptr /* monitor */);
+      ocr_done_ = true;
+    }
+  }
+
   bool layout_analysis_done_ = false;
   bool ocr_done_ = false;
   std::unique_ptr<tesseract::TessBaseAPI> tesseract_;
@@ -154,6 +163,7 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
       .function("loadModel", &OCREngine::LoadModel)
       .function("loadImage", &OCREngine::LoadImage)
       .function("getBoundingBoxes", &OCREngine::GetBoundingBoxes)
+      .function("getTextBoxes", &OCREngine::GetTextBoxes)
       .function("getText", &OCREngine::GetText);
 
   enum_<TextUnit>("TextUnit")

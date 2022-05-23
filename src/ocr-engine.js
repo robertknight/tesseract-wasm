@@ -142,9 +142,7 @@ export class OCREngine {
    * @return {IntRect[]}
    */
   getBoundingBoxes(unit) {
-    if (!this._imageLoaded) {
-      throw new Error("No image loaded");
-    }
+    this._checkImageLoaded();
     const textUnit = this._textUnitForUnit(unit);
     return jsArrayFromStdVector(this._engine.getBoundingBoxes(textUnit));
   }
@@ -158,11 +156,26 @@ export class OCREngine {
    * @return {TextRect[]}
    */
   getTextBoxes(unit) {
+    this._checkImageLoaded();
+    const textUnit = this._textUnitForUnit(unit);
+    return jsArrayFromStdVector(this._engine.getTextBoxes(textUnit));
+  }
+
+  /**
+   * Perform layout analysis and text recognition on the current image, if
+   * not already done, and return the page text as a string.
+   *
+   * @return {string}
+   */
+  getText() {
+    this._checkImageLoaded();
+    return this._engine.getText();
+  }
+
+  _checkImageLoaded() {
     if (!this._imageLoaded) {
       throw new Error("No image loaded");
     }
-    const textUnit = this._textUnitForUnit(unit);
-    return jsArrayFromStdVector(this._engine.getText(textUnit));
   }
 
   /** @param {TextUnit} unit */

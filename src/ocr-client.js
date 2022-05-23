@@ -130,4 +130,15 @@ export class OCRClient {
     const engine = await this._ocrEngine;
     return engine.getTextBoxes(unit);
   }
+
+  /**
+   * Perform layout analysis and text recognition on the current image, if
+   * not already done, and return the image's text as a string.
+   *
+   * @return {Promise<string>}
+   */
+  async getText() {
+    const engine = await this._ocrEngine;
+    return engine.getText();
+  }
 }
