@@ -63,7 +63,7 @@ describe("OCREngine", () => {
   });
 
   it("extracts bounding boxes from image", async function () {
-    this.timeout(1_000);
+    this.timeout(2_000);
 
     const imageData = await loadImage(resolve("./test-page.jpg"));
     ocr.loadImage(imageData);
