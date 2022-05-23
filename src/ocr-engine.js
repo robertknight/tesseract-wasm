@@ -68,6 +68,8 @@ export class OCREngine {
   constructor(tessLib) {
     this._tesseractLib = tessLib;
     this._engine = new tessLib.OCREngine();
+    this._modelLoaded = false;
+    this._imageLoaded = false;
   }
 
   /**
@@ -90,6 +92,7 @@ export class OCREngine {
     if (result !== 0) {
       throw new Error("Text recognition model failed to load");
     }
+    this._modelLoaded = true;
   }
 
   /**
@@ -101,6 +104,10 @@ export class OCREngine {
    * @param {ImageBitmap|ImageData} image
    */
   loadImage(image) {
+    if (!this._modelLoaded) {
+      throw new Error("Model must be loaded before image");
+    }
+
     let imageData;
     if (typeof ImageBitmap !== "undefined" && image instanceof ImageBitmap) {
       imageData = imageDataFromBitmap(image);
@@ -119,6 +126,8 @@ export class OCREngine {
     if (result !== 0) {
       throw new Error("Failed to load image");
     }
+
+    this._imageLoaded = true;
   }
 
   /**
@@ -133,6 +142,9 @@ export class OCREngine {
    * @return {IntRect[]}
    */
   getBoundingBoxes(unit) {
+    if (!this._imageLoaded) {
+      throw new Error("No image loaded");
+    }
     const textUnit = this._textUnitForUnit(unit);
     return jsArrayFromStdVector(this._engine.getBoundingBoxes(textUnit));
   }
@@ -146,6 +158,9 @@ export class OCREngine {
    * @return {TextRect[]}
    */
   getTextBoxes(unit) {
+    if (!this._imageLoaded) {
+      throw new Error("No image loaded");
+    }
     const textUnit = this._textUnitForUnit(unit);
     return jsArrayFromStdVector(this._engine.getText(textUnit));
   }
