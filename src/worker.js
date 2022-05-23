@@ -1,12 +1,15 @@
 import { expose, proxy } from "comlink";
 
 import { createOCREngine } from "./ocr-engine";
-if (typeof WorkerGlobalScope !== "undefined") {
-  const workerAPI = {
-    createOCREngine: async () => {
-      const engine = await createOCREngine();
-      return proxy(engine);
-    },
-  };
-  expose(workerAPI);
-}
+
+const workerAPI = {
+  /**
+   * @param {object} options
+   *   @param {Uint8Array|ArrayBuffer} [options.wasmBinary]
+   */
+  createOCREngine: async ({ wasmBinary }) => {
+    const engine = await createOCREngine({ wasmBinary });
+    return proxy(engine);
+  },
+};
+expose(workerAPI);
