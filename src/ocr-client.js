@@ -11,6 +11,21 @@ function defaultWorkerURL() {
 }
 
 /**
+ * @param {string} url
+ */
+function initWebWorker(url) {
+  const worker = new Worker(url);
+  const remote = comlink.wrap(worker);
+  return { remote, terminate: () => worker.terminate };
+}
+
+/**
+ * @typedef OCRClientWorker
+ * @prop {import('comlink').Remote<any>} remote
+ * @prop {() => void} terminate
+ */
+
+/**
  * High-level async API for performing OCR.
  */
 export class OCRClient {
@@ -21,16 +36,28 @@ export class OCRClient {
    * be performed.
    *
    * @param {object} options
-   *   @param {string} [options.workerURL]
+   *   @param {(url: string) => OCRClientWorker} [options.initWorker] - Internal
+   *     callback that initializes a worker in the current environment. The
+   *     default implementation sets up a Web Worker.
+   *   @param {Uint8Array|ArrayBuffer} [options.wasmBinary] - WebAssembly binary
+   *     to load in worker. If not set, it is loaded from the default location
+   *     relative to the currnet script.
+   *   @param {string} [options.workerURL] - Location of worker script/module.
+   *     If not set, it is loaded from the default location relative to the
+   *     current script.
    */
-  constructor({ workerURL = defaultWorkerURL() } = {}) {
-    this._worker = new Worker(workerURL);
-    const workerAPI = comlink.wrap(this._worker);
-    this._ocrEngine = workerAPI.createOCREngine();
+  constructor({
+    initWorker = initWebWorker,
+    wasmBinary,
+    workerURL = defaultWorkerURL(),
+  } = {}) {
+    const { remote, terminate } = initWorker(workerURL);
+    this._terminate = terminate;
+    this._ocrEngine = remote.createOCREngine({ wasmBinary });
   }
 
   async destroy() {
-    this._worker.terminate();
+    this._terminate();
   }
 
   /**
@@ -57,6 +84,7 @@ export class OCRClient {
     // If the browser doesn't support OffscreenCanvas, we have to perform
     // ImageBitmap => ImageData conversion on the main thread.
     if (
+      typeof ImageBitmap !== "undefined" &&
       image instanceof ImageBitmap &&
       // @ts-expect-error - OffscreenCanvas is missing from TS types
       typeof OffscreenCanvas === "undefined"

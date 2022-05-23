@@ -2,7 +2,11 @@ EMSDK_DIR=$(PWD)/third_party/emsdk/upstream/emscripten
 INSTALL_DIR=$(PWD)/install
 FALLBACK_INSTALL_DIR=$(INSTALL_DIR)/fallback
 
-DIST_TARGETS=dist/tesseract-core.wasm dist/tesseract-core-fallback.wasm dist/lib.js dist/worker.js
+DIST_TARGETS=\
+  dist/tesseract-core.wasm \
+	dist/tesseract-core-fallback.wasm \
+	dist/lib.js \
+	dist/tesseract-worker.js
 
 .PHONY: lib
 lib: $(DIST_TARGETS)
@@ -30,7 +34,7 @@ checkformat:
 
 .PHONY: test
 test: third_party/tessdata_fast
-	node test/node-test.js
+	node_modules/.bin/mocha
 
 EMSDK_COMMIT=93f21c9ef30bab52de24f9d4ea3f2f377cf6326a
 third_party/emsdk:
@@ -166,7 +170,7 @@ dist/tesseract-core-fallback.wasm: build/tesseract-core-fallback.wasm
 	mkdir -p dist/
 	cp $< $@
 
-dist/lib.js dist/worker.js: src/*.js build/tesseract-core.js build/tesseract-core.wasm build/tesseract-core-fallback.wasm
+dist/lib.js dist/tesseract-worker.js: src/*.js build/tesseract-core.js build/tesseract-core.wasm build/tesseract-core-fallback.wasm
 	node_modules/.bin/rollup -c rollup.config.js
 
 .PHONY: examples
