@@ -150,6 +150,21 @@ export class OCRClient {
   }
 
   /**
+   * Clear the current image and text recognition results.
+   *
+   * This will clear the loaded image data internally, but keep the text
+   * recognition model loaded.
+   *
+   * At present there is no way to shrink WebAssembly memory, so this will not
+   * return the memory used by the image to the OS/browser. To release memory,
+   * the web worker needs to be shut down via {@link destroy}.
+   */
+  async clearImage(): Promise<void> {
+    const engine = await this._ocrEngine;
+    return engine.clearImage();
+  }
+
+  /**
    * Perform layout analysis on the current image, if not already done, and
    * return bounding boxes for a given unit of text.
    *

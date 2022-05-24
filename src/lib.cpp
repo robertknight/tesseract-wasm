@@ -160,7 +160,11 @@ class OCREngine {
     return {};
   }
 
-  void ClearImage() { tesseract_->Clear(); }
+  void ClearImage() {
+    tesseract_->Clear();
+    layout_analysis_done_ = false;
+    ocr_done_ = false;
+  }
 
   std::vector<TextRect> GetBoundingBoxes(TextUnit unit) {
     if (!layout_analysis_done_) {
@@ -304,12 +308,12 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
   class_<OCREngine>("OCREngine")
       .constructor<>()
       .function("clearImage", &OCREngine::ClearImage)
-      .function("loadModel", &OCREngine::LoadModel)
-      .function("loadImage", &OCREngine::LoadImage)
       .function("getBoundingBoxes", &OCREngine::GetBoundingBoxes)
       .function("getOrientation", &OCREngine::GetOrientation)
+      .function("getText", &OCREngine::GetText)
       .function("getTextBoxes", &OCREngine::GetTextBoxes)
-      .function("getText", &OCREngine::GetText);
+      .function("loadImage", &OCREngine::LoadImage)
+      .function("loadModel", &OCREngine::LoadModel);
 
   value_object<OCRResult>("OCRResult").field("error", &OCRResult::error);
 

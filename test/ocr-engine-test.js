@@ -308,4 +308,15 @@ describe("OCREngine", () => {
       assert.equal(estimatedOrient.confidence, 1);
     }
   });
+
+  it("clears the image", async () => {
+    ocr.loadImage(emptyImage(100, 100));
+    ocr.getBoundingBoxes("word");
+
+    ocr.clearImage();
+
+    assert.throws(() => {
+      ocr.getBoundingBoxes("word");
+    }, "No image loaded");
+  });
 });

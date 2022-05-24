@@ -118,4 +118,22 @@ describe("OCRClient", () => {
     assert.equal(orient.rotation, 0);
     assert.equal(orient.confidence, 1.0);
   });
+
+  it("clears the image", async () => {
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
+    await ocr.loadImage(imageData);
+    await ocr.getBoundingBoxes("word");
+
+    await ocr.clearImage();
+
+    let error;
+    try {
+      await ocr.getBoundingBoxes("word");
+    } catch (e) {
+      error = e;
+    }
+
+    assert.instanceOf(error, Error);
+    assert.equal(error.message, "No image loaded");
+  });
 });
