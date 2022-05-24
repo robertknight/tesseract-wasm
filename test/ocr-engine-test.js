@@ -100,7 +100,7 @@ describe("OCREngine", () => {
     // performs a faster/simpler analysis and `getTextBoxes` triggers the more
     // expensive LSTM-based analysis.
     const wordBoxes = ocr.getBoundingBoxes("word");
-    assert.equal(wordBoxes.length, 159);
+    assert.equal(wordBoxes.length, 153);
 
     for (let box of wordBoxes) {
       const { rect } = box;
@@ -120,7 +120,7 @@ describe("OCREngine", () => {
     }
 
     const lineBoxes = ocr.getBoundingBoxes("line");
-    assert.equal(lineBoxes.length, 12);
+    assert.equal(lineBoxes.length, 10);
   });
 
   it("extracts text boxes from image", async function () {
@@ -130,20 +130,23 @@ describe("OCREngine", () => {
     ocr.loadImage(imageData);
 
     const wordBoxes = ocr.getTextBoxes("word");
-    assert.equal(wordBoxes.length, 165);
-    assert.equal(wordBoxes.at(0).text, "J.");
+    assert.equal(wordBoxes.length, 159);
+    assert.equal(wordBoxes.at(0).text, "Image");
     assert.equal(wordBoxes.at(-1).text, "complexity.");
     assert.approximately(mean(wordBoxes.map((b) => b.text.length)), 6, 2);
     assert.approximately(mean(wordBoxes.map((b) => b.confidence)), 0.95, 3);
 
     const lineBoxes = ocr.getTextBoxes("line");
-    assert.equal(lineBoxes.length, 12);
-    assert.equal(lineBoxes.at(0).text, "J. M. White\n\n");
+    assert.equal(lineBoxes.length, 10);
+    assert.equal(
+      lineBoxes.at(0).text,
+      "Image Thresholding for Optical Character Recognition and\n"
+    );
     assert.equal(
       lineBoxes.at(-1).text,
       "second is a more aggressive approach directed toward specialized, high-volume applications which justify extra complexity.\n"
     );
-    assert.approximately(mean(lineBoxes.map((b) => b.text.length)), 94, 2);
+    assert.approximately(mean(lineBoxes.map((b) => b.text.length)), 110, 2);
     assert.approximately(mean(lineBoxes.map((b) => b.confidence)), 0.95, 3);
   });
 
@@ -182,8 +185,6 @@ describe("OCREngine", () => {
       .map((b) => b.text);
 
     assert.deepEqual(lineStarts, [
-      "J.",
-      "G.",
       "Image",
       "Other",
       "Two",
@@ -196,8 +197,6 @@ describe("OCREngine", () => {
       "second",
     ]);
     assert.deepEqual(lineEnds, [
-      "White",
-      "Rohrer",
       "and",
       "Extraction",
       "or",
