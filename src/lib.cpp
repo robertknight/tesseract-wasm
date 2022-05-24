@@ -77,6 +77,11 @@ class OCREngine {
         nullptr /* reader */
     );
 
+    // Enable page segmentation and layout analysis. Must be called after `Init`
+    // to take effect. Without this Tesseract defaults to treating the whole
+    // page as one block of text.
+    tesseract_->SetPageSegMode(tesseract::PSM_AUTO);
+
     return result;
   }
 

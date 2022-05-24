@@ -32,7 +32,7 @@ describe("OCRClient", () => {
     await ocr.loadImage(imageData);
 
     const boxes = await ocr.getBoundingBoxes("word");
-    assert.equal(boxes.length, 159);
+    assert.equal(boxes.length, 153);
     for (let box of boxes) {
       const { rect } = box;
 
