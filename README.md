@@ -86,8 +86,30 @@ See the `examples/` directory for projects that show usage of the library.
 
 ## Development
 
-To build this library locally, you will need C++ development tools installed
-(make, cmake).
+### Prerequisites
+
+To build this library locally, you will need:
+
+ - A C++ build toolchain (eg. via the `build-essential` package on Ubuntu or Xcode on macOS)
+ - [CMake](https://cmake.org)
+ - [Ninja](https://ninja-build.org)
+
+The [Emscripten](https://emscripten.org) toolchain used to compile WebAssembly
+is downloaded as part of the build process.
+
+#### On macOS:
+
+```
+brew install cmake ninja
+```
+
+#### On Ubuntu
+
+```
+sudo apt-get install cmake ninja-build
+```
+
+### Building the library
 
 ```sh
 git clone https://github.com/robertknight/tesseract-wasm
@@ -98,4 +120,7 @@ make lib
 
 # Build example projects
 make examples
+
+# Run tests
+make test
 ```

@@ -1,3 +1,78 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 102718ab..b7897cd4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -90,6 +90,7 @@ option(ENABLE_LTO "Enable link-time optimization" OFF)
+ option(FAST_FLOAT "Enable float for LSTM" ON)
+ option(ENABLE_OPENCL "Enable unsupported experimental OpenCL support" OFF)
+ option(BUILD_TRAINING_TOOLS "Build training tools" ON)
++option(BUILD_TESSERACT_BINARY "Build Tesseract binary" ON)
+ option(BUILD_TESTS "Build tests" OFF)
+ option(USE_SYSTEM_ICU "Use system ICU" OFF)
+ option(DISABLE_ARCHIVE "Disable build with libarchive (if available)" OFF)
+@@ -560,9 +561,7 @@ file(
+   src/cutil/*.cpp
+   src/dict/*.cpp
+   src/lstm/*.cpp
+-  src/opencl/*.cpp
+   src/textord/*.cpp
+-  src/viewer/*.cpp
+   src/wordrec/*.cpp)
+ 
+ if(DISABLED_LEGACY_ENGINE)
+@@ -708,14 +707,7 @@ file(
+ 
+ set(TESSERACT_SRC
+     ${TESSERACT_SRC}
+-    src/api/baseapi.cpp
+-    src/api/capi.cpp
+-    src/api/renderer.cpp
+-    src/api/altorenderer.cpp
+-    src/api/hocrrenderer.cpp
+-    src/api/lstmboxrenderer.cpp
+-    src/api/pdfrenderer.cpp
+-    src/api/wordstrboxrenderer.cpp)
++    src/api/baseapi.cpp)
+ 
+ set(TESSERACT_CONFIGS
+   tessdata/configs/alto
+@@ -846,14 +838,16 @@ endif()
+ # EXECUTABLE tesseract
+ # ##############################################################################
+ 
+-add_executable(tesseract src/tesseract.cpp)
+-target_link_libraries(tesseract libtesseract)
+-if(HAVE_TIFFIO_H AND WIN32)
+-  target_link_libraries(tesseract ${TIFF_LIBRARIES})
+-endif()
++if(BUILD_TESSERACT_BINARY)
++  add_executable(tesseract src/tesseract.cpp)
++  target_link_libraries(tesseract libtesseract)
++  if(HAVE_TIFFIO_H AND WIN32)
++    target_link_libraries(tesseract ${TIFF_LIBRARIES})
++  endif()
+ 
+-if(OPENMP_BUILD AND UNIX)
+-  target_link_libraries(tesseract pthread)
++  if(OPENMP_BUILD AND UNIX)
++    target_link_libraries(tesseract pthread)
++  endif()
+ endif()
+ 
+ # ##############################################################################
+@@ -887,7 +881,11 @@ write_basic_package_version_file(
+ 
+ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tesseract.pc
+         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+-install(TARGETS tesseract DESTINATION bin)
++
++if(BUILD_TESSERACT_BINARY)
++  install(TARGETS tesseract DESTINATION bin)
++endif()
++
+ install(
+   TARGETS libtesseract
+   EXPORT TesseractTargets
 diff --git a/src/arch/simddetect.cpp b/src/arch/simddetect.cpp
 index 8c8605c3..b53de86d 100644
 --- a/src/arch/simddetect.cpp

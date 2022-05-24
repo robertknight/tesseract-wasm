@@ -13,7 +13,7 @@ jobs:
         key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
     - name: Install
       run: |
-        sudo apt-get install clang-format
+        sudo apt-get install clang-format ninja-build
         npm install
     - name: Build library
       run: make lib
