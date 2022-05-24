@@ -1,8 +1,8 @@
 import * as comlink from "comlink";
 
 /**
- * @typedef {import('./ocr-engine').IntRect} IntRect
- * @typedef {import('./ocr-engine').TextRect} TextRect
+ * @typedef {import('./ocr-engine').BoxItem} BoxItem
+ * @typedef {import('./ocr-engine').TextItem} TextItem
  * @typedef {import('./ocr-engine').TextUnit} TextUnit
  */
 
@@ -111,7 +111,7 @@ export class OCRClient {
    * the page is required, not the text content.
    *
    * @param {TextUnit} unit
-   * @return {Promise<IntRect[]>}
+   * @return {Promise<BoxItem[]>}
    */
   async getBoundingBoxes(unit) {
     const engine = await this._ocrEngine;
@@ -124,7 +124,7 @@ export class OCRClient {
    * unit of text.
    *
    * @param {TextUnit} unit
-   * @return {Promise<TextRect[]>}
+   * @return {Promise<TextItem[]>}
    */
   async getTextBoxes(unit) {
     const engine = await this._ocrEngine;

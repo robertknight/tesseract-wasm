@@ -3,8 +3,10 @@ import { readFile } from "node:fs/promises";
 
 import { assert } from "chai";
 
-import { createOCREngine } from "../dist/lib.js";
+import { createOCREngine, layoutFlags } from "../dist/lib.js";
 import { loadImage, resolve } from "./util.js";
+
+const { StartOfLine, EndOfLine } = layoutFlags;
 
 async function createEngine({ loadModel = true } = {}) {
   const wasmBinary = await readFile(resolve("../dist/tesseract-core.wasm"));
@@ -101,18 +103,20 @@ describe("OCREngine", () => {
     assert.equal(wordBoxes.length, 159);
 
     for (let box of wordBoxes) {
-      assert.isNumber(box.left);
-      assert.isNumber(box.right);
-      assert.isNumber(box.top);
-      assert.isNumber(box.bottom);
+      const { rect } = box;
 
-      assert.isTrue(box.left >= 0 && box.left <= imageData.width);
-      assert.isTrue(box.right >= 0 && box.right <= imageData.width);
-      assert.isTrue(box.right > box.left);
+      assert.isNumber(rect.left);
+      assert.isNumber(rect.right);
+      assert.isNumber(rect.top);
+      assert.isNumber(rect.bottom);
 
-      assert.isTrue(box.top >= 0 && box.top <= imageData.height);
-      assert.isTrue(box.bottom >= 0 && box.bottom <= imageData.height);
-      assert.isTrue(box.bottom > box.top);
+      assert.isTrue(rect.left >= 0 && rect.left <= imageData.width);
+      assert.isTrue(rect.right >= 0 && rect.right <= imageData.width);
+      assert.isTrue(rect.right > rect.left);
+
+      assert.isTrue(rect.top >= 0 && rect.top <= imageData.height);
+      assert.isTrue(rect.bottom >= 0 && rect.bottom <= imageData.height);
+      assert.isTrue(rect.bottom > rect.top);
     }
 
     const lineBoxes = ocr.getBoundingBoxes("line");
@@ -130,6 +134,7 @@ describe("OCREngine", () => {
     assert.equal(wordBoxes.at(0).text, "J.");
     assert.equal(wordBoxes.at(-1).text, "complexity.");
     assert.approximately(mean(wordBoxes.map((b) => b.text.length)), 6, 2);
+    assert.approximately(mean(wordBoxes.map((b) => b.confidence)), 0.95, 3);
 
     const lineBoxes = ocr.getTextBoxes("line");
     assert.equal(lineBoxes.length, 12);
@@ -139,6 +144,7 @@ describe("OCREngine", () => {
       "second is a more aggressive approach directed toward specialized, high-volume applications which justify extra complexity.\n"
     );
     assert.approximately(mean(lineBoxes.map((b) => b.text.length)), 94, 2);
+    assert.approximately(mean(lineBoxes.map((b) => b.confidence)), 0.95, 3);
   });
 
   [
@@ -159,6 +165,50 @@ describe("OCREngine", () => {
       const wordBoxes = ocr.getTextBoxes("word");
       assert.equal(wordBoxes.length, 1);
     });
+  });
+
+  it("extracts layout flags from image", async function () {
+    this.timeout(5_000);
+
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
+    ocr.loadImage(imageData);
+
+    const wordBoxes = ocr.getTextBoxes("word");
+    const lineStarts = wordBoxes
+      .filter((b) => b.flags & StartOfLine)
+      .map((b) => b.text);
+    const lineEnds = wordBoxes
+      .filter((b) => b.flags & EndOfLine)
+      .map((b) => b.text);
+
+    assert.deepEqual(lineStarts, [
+      "J.",
+      "G.",
+      "Image",
+      "Other",
+      "Two",
+      "hand-printed",
+      "to",
+      "does",
+      "Image",
+      "forms",
+      "nonlinear,",
+      "second",
+    ]);
+    assert.deepEqual(lineEnds, [
+      "White",
+      "Rohrer",
+      "and",
+      "Extraction",
+      "or",
+      "algorithms",
+      "it",
+      "Character",
+      "copy",
+      "a",
+      "The",
+      "complexity.",
+    ]);
   });
 
   it("extracts text from image", async function () {

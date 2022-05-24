@@ -40,6 +40,16 @@ function jsArrayFromStdVector(vec) {
 }
 
 /**
+ * Flags indicating position of a text item.
+ *
+ * Keep this in sync with `LayoutFlags` in lib.cpp.
+ */
+export const layoutFlags = {
+  StartOfLine: 1,
+  EndOfLine: 2,
+};
+
+/**
  * @typedef IntRect
  * @prop {number} left
  * @prop {number} top
@@ -48,8 +58,16 @@ function jsArrayFromStdVector(vec) {
  */
 
 /**
- * @typedef TextRect
+ * @typedef BoxItem
  * @prop {IntRect} rect
+ * @prop {number} flags - Combination of flags from {@link layoutFlags}
+ */
+
+/**
+ * @typedef TextItem
+ * @prop {IntRect} rect
+ * @prop {number} flags - Combination of flags from {@link layoutFlags}
+ * @prop {number} confidence - Confidence score for this word in [0, 1]
  * @prop {string} text
  */
 
@@ -138,8 +156,13 @@ export class OCREngine {
    * provide much faster results if only the location of lines/words etc. on
    * the page is required, not the text content.
    *
+   * This method may return a different number/positions of words on a line
+   * compared to {@link getTextBoxes} due to the simpler analysis. After full
+   * OCR has been performed by {@link getTextBoxes} or {@link getText}, this
+   * method should return the same results.
+   *
    * @param {TextUnit} unit
-   * @return {IntRect[]}
+   * @return {BoxItem[]}
    */
   getBoundingBoxes(unit) {
     this._checkImageLoaded();
@@ -153,7 +176,7 @@ export class OCREngine {
    * unit of text.
    *
    * @param {TextUnit} unit
-   * @return {TextRect[]}
+   * @return {TextItem[]}
    */
   getTextBoxes(unit) {
     this._checkImageLoaded();
