@@ -78,6 +78,9 @@ class OCREngine {
     if (image_data.size() < min_buffer_len) {
       return -1;
     }
+    if (width <= 0 || height <= 0) {
+      return -1;
+    }
 
     tesseract_->SetImage(
         reinterpret_cast<const unsigned char*>(image_data.data()), width,
@@ -96,16 +99,18 @@ class OCREngine {
       layout_analysis_done_ = true;
     }
     auto iter = unique_from_raw(tesseract_->GetIterator());
-    iter->Begin();
+    if (!iter) {
+      return {};
+    }
 
     auto level = iterator_level_from_unit(unit);
     std::vector<IntRect> boxes;
-    while (iter->Next(level)) {
+    do {
       IntRect rect;
       iter->BoundingBox(level, &rect.left, &rect.top, &rect.right,
                         &rect.bottom);
       boxes.push_back(rect);
-    }
+    } while (iter->Next(level));
 
     return boxes;
   }
@@ -113,18 +118,21 @@ class OCREngine {
   std::vector<TextRect> GetTextBoxes(TextUnit unit) {
     DoOCR();
     auto iter = unique_from_raw(tesseract_->GetIterator());
+    if (!iter) {
+      return {};
+    }
 
     auto level = iterator_level_from_unit(unit);
 
     std::vector<TextRect> boxes;
-    while (iter->Next(level)) {
-      auto text = string_from_raw(iter->WordNormedUTF8Text());
+    do {
+      auto text = string_from_raw(iter->GetUTF8Text(level));
       TextRect tr;
       tr.text = text;
       iter->BoundingBox(level, &tr.rect.left, &tr.rect.top, &tr.rect.right,
                         &tr.rect.bottom);
       boxes.push_back(tr);
-    }
+    } while (iter->Next(level));
 
     return boxes;
   }
@@ -138,6 +146,7 @@ class OCREngine {
   void DoOCR() {
     if (!ocr_done_) {
       tesseract_->Recognize(nullptr /* monitor */);
+      layout_analysis_done_ = true;
       ocr_done_ = true;
     }
   }

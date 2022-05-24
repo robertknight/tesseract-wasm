@@ -28,11 +28,11 @@ describe("OCRClient", () => {
   it("extracts bounding boxes from image", async function () {
     this.timeout(2_000);
 
-    const imageData = await loadImage(resolve("./test-page.jpg"));
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
     await ocr.loadImage(imageData);
 
     const boxes = await ocr.getBoundingBoxes("word");
-    assert.isTrue(boxes.length >= 640 && boxes.length < 650);
+    assert.equal(boxes.length, 159);
     for (let box of boxes) {
       assert.isNumber(box.left);
       assert.isNumber(box.right);
