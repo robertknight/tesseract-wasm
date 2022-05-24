@@ -34,18 +34,20 @@ describe("OCRClient", () => {
     const boxes = await ocr.getBoundingBoxes("word");
     assert.equal(boxes.length, 159);
     for (let box of boxes) {
-      assert.isNumber(box.left);
-      assert.isNumber(box.right);
-      assert.isNumber(box.top);
-      assert.isNumber(box.bottom);
+      const { rect } = box;
 
-      assert.isTrue(box.left >= 0 && box.left <= imageData.width);
-      assert.isTrue(box.right >= 0 && box.right <= imageData.width);
-      assert.isTrue(box.right > box.left);
+      assert.isNumber(rect.left);
+      assert.isNumber(rect.right);
+      assert.isNumber(rect.top);
+      assert.isNumber(rect.bottom);
 
-      assert.isTrue(box.top >= 0 && box.top <= imageData.height);
-      assert.isTrue(box.bottom >= 0 && box.bottom <= imageData.height);
-      assert.isTrue(box.bottom > box.top);
+      assert.isTrue(rect.left >= 0 && rect.left <= imageData.width);
+      assert.isTrue(rect.right >= 0 && rect.right <= imageData.width);
+      assert.isTrue(rect.right > rect.left);
+
+      assert.isTrue(rect.top >= 0 && rect.top <= imageData.height);
+      assert.isTrue(rect.bottom >= 0 && rect.bottom <= imageData.height);
+      assert.isTrue(rect.bottom > rect.top);
     }
   });
 

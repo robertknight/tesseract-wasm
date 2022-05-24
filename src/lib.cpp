@@ -14,8 +14,17 @@ struct IntRect {
   int bottom = 0;
 };
 
+enum LayoutFlag {
+  StartOfLine = 1,
+  EndOfLine = 2,
+};
+
+using LayoutFlags = int;
+
 struct TextRect {
   IntRect rect;
+  LayoutFlags flags = 0;
+  float confidence = 0.0f;
   std::string text;
 };
 
@@ -93,48 +102,17 @@ class OCREngine {
     return 0;
   }
 
-  std::vector<IntRect> GetBoundingBoxes(TextUnit unit) {
+  std::vector<TextRect> GetBoundingBoxes(TextUnit unit) {
     if (!layout_analysis_done_) {
       tesseract_->AnalyseLayout();
       layout_analysis_done_ = true;
     }
-    auto iter = unique_from_raw(tesseract_->GetIterator());
-    if (!iter) {
-      return {};
-    }
-
-    auto level = iterator_level_from_unit(unit);
-    std::vector<IntRect> boxes;
-    do {
-      IntRect rect;
-      iter->BoundingBox(level, &rect.left, &rect.top, &rect.right,
-                        &rect.bottom);
-      boxes.push_back(rect);
-    } while (iter->Next(level));
-
-    return boxes;
+    return GetBoxes(unit, false /* with_text */);
   }
 
   std::vector<TextRect> GetTextBoxes(TextUnit unit) {
     DoOCR();
-    auto iter = unique_from_raw(tesseract_->GetIterator());
-    if (!iter) {
-      return {};
-    }
-
-    auto level = iterator_level_from_unit(unit);
-
-    std::vector<TextRect> boxes;
-    do {
-      auto text = string_from_raw(iter->GetUTF8Text(level));
-      TextRect tr;
-      tr.text = text;
-      iter->BoundingBox(level, &tr.rect.left, &tr.rect.top, &tr.rect.right,
-                        &tr.rect.bottom);
-      boxes.push_back(tr);
-    } while (iter->Next(level));
-
-    return boxes;
+    return GetBoxes(unit, true /* with_text */);
   }
 
   std::string GetText() {
@@ -143,6 +121,40 @@ class OCREngine {
   }
 
  private:
+  std::vector<TextRect> GetBoxes(TextUnit unit, bool with_text) {
+    auto iter = unique_from_raw(tesseract_->GetIterator());
+    if (!iter) {
+      return {};
+    }
+
+    auto level = iterator_level_from_unit(unit);
+    std::vector<TextRect> boxes;
+    do {
+      TextRect tr;
+      if (with_text) {
+        // Tesseract provides confidence as a percentage. Convert it to a score
+        // in [0, 1]
+        tr.confidence = iter->Confidence(level) * 0.01;
+        tr.text = string_from_raw(iter->GetUTF8Text(level));
+      }
+
+      if (unit < TextUnit::Line) {
+        if (iter->IsAtBeginningOf(tesseract::RIL_TEXTLINE)) {
+          tr.flags |= LayoutFlag::StartOfLine;
+        }
+        if (iter->IsAtFinalElement(tesseract::RIL_TEXTLINE, level)) {
+          tr.flags |= LayoutFlag::EndOfLine;
+        }
+      }
+
+      iter->BoundingBox(level, &tr.rect.left, &tr.rect.top, &tr.rect.right,
+                        &tr.rect.bottom);
+      boxes.push_back(tr);
+    } while (iter->Next(level));
+
+    return boxes;
+  }
+
   void DoOCR() {
     if (!ocr_done_) {
       tesseract_->Recognize(nullptr /* monitor */);
@@ -165,6 +177,8 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
 
   value_object<TextRect>("TextRect")
       .field("rect", &TextRect::rect)
+      .field("flags", &TextRect::flags)
+      .field("confidence", &TextRect::confidence)
       .field("text", &TextRect::text);
 
   class_<OCREngine>("OCREngine")
