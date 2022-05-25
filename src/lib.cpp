@@ -55,6 +55,13 @@ auto iterator_level_from_unit(TextUnit unit) {
   }
 }
 
+struct OCRResult {
+  OCRResult() {}
+  OCRResult(const std::string& error_) : error(error_) {}
+
+  std::string error;
+};
+
 using namespace emscripten;
 
 class OCREngine {
@@ -65,8 +72,7 @@ class OCREngine {
 
   std::string Version() const { return tesseract_->Version(); }
 
-  // TODO - Replace int result with something meaningful
-  int LoadModel(const std::string& model_data) {
+  OCRResult LoadModel(const std::string& model_data) {
     std::vector<std::string> vars_vec;
     std::vector<std::string> vars_values;
 
@@ -76,24 +82,26 @@ class OCREngine {
         nullptr /* vars_values */, false /* set_only_non_debug_params */,
         nullptr /* reader */
     );
+    if (result != 0) {
+      return OCRResult("Failed to load training data");
+    }
 
     // Enable page segmentation and layout analysis. Must be called after `Init`
     // to take effect. Without this Tesseract defaults to treating the whole
     // page as one block of text.
     tesseract_->SetPageSegMode(tesseract::PSM_AUTO);
 
-    return result;
+    return {};
   }
 
-  // TODO - Replace int result with something meaningful
-  int LoadImage(const std::string& image_data, int width, int height,
-                int bytes_per_pixel, int bytes_per_line) {
+  OCRResult LoadImage(const std::string& image_data, int width, int height,
+                      int bytes_per_pixel, int bytes_per_line) {
     auto min_buffer_len = height * bytes_per_line;
     if (image_data.size() < min_buffer_len) {
-      return -1;
+      return OCRResult("Image buffer length does not match width/height");
     }
     if (width <= 0 || height <= 0) {
-      return -1;
+      return OCRResult("Image width or height is zero");
     }
 
     tesseract_->SetImage(
@@ -104,7 +112,7 @@ class OCREngine {
     layout_analysis_done_ = false;
     ocr_done_ = false;
 
-    return 0;
+    return {};
   }
 
   std::vector<TextRect> GetBoundingBoxes(TextUnit unit) {
@@ -193,6 +201,8 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
       .function("getBoundingBoxes", &OCREngine::GetBoundingBoxes)
       .function("getTextBoxes", &OCREngine::GetTextBoxes)
       .function("getText", &OCREngine::GetText);
+
+  value_object<OCRResult>("OCRResult").field("error", &OCRResult::error);
 
   enum_<TextUnit>("TextUnit")
       .value("Line", TextUnit::Line)

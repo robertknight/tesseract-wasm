@@ -107,7 +107,7 @@ export class OCREngine {
     const modelArray =
       model instanceof ArrayBuffer ? new Uint8Array(model) : model;
     const result = this._engine.loadModel(modelArray);
-    if (result !== 0) {
+    if (result.error) {
       throw new Error("Text recognition model failed to load");
     }
     this._modelLoaded = true;
@@ -141,7 +141,7 @@ export class OCREngine {
       imageData.width * 4 /* bytesPerLine */
     );
 
-    if (result !== 0) {
+    if (result.error) {
       throw new Error("Failed to load image");
     }
 
