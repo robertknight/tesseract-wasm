@@ -70,16 +70,9 @@ describe("OCREngine", () => {
     });
   });
 
-  it("throws an error if image is loaded before model", async function () {
-    this.timeout(10_000);
-    const ocr = await createEngine({ loadModel: false });
-    const imageData = await loadImage(resolve("./test-page.jpg"));
-    assert.throws(() => {
-      ocr.loadImage(imageData);
-    }, "Model must be loaded before image");
-  });
-
   it("throws an error if OCR is attempted before image is loaded", async () => {
+    const ocr = await createEngine();
+
     assert.throws(() => {
       ocr.getBoundingBoxes();
     }, "No image loaded");
@@ -87,6 +80,24 @@ describe("OCREngine", () => {
     assert.throws(() => {
       ocr.getTextBoxes();
     }, "No image loaded");
+
+    assert.throws(() => {
+      ocr.getText();
+    }, "No image loaded");
+  });
+
+  it("throws an error if OCR is attempted before model is loaded", async () => {
+    const ocr = await createEngine({ loadModel: false });
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
+    ocr.loadImage(imageData);
+
+    assert.throws(() => {
+      ocr.getTextBoxes();
+    }, "No text recognition model loaded");
+
+    assert.throws(() => {
+      ocr.getText();
+    }, "No text recognition model loaded");
   });
 
   it("extracts bounding boxes from image", async function () {
@@ -121,6 +132,16 @@ describe("OCREngine", () => {
 
     const lineBoxes = ocr.getBoundingBoxes("line");
     assert.equal(lineBoxes.length, 10);
+  });
+
+  it("can extract bounding boxes without a model loaded", async function () {
+    const ocr = await createEngine({ loadModel: false });
+
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
+    ocr.loadImage(imageData);
+
+    const wordBoxes = ocr.getBoundingBoxes("word");
+    assert.equal(wordBoxes.length, 153);
   });
 
   it("extracts text boxes from image", async function () {
