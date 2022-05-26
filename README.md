@@ -1,19 +1,24 @@
 # tesseract-wasm
 
 A WebAssembly build of the [Tesseract](https://github.com/tesseract-ocr/tesseract)
-OCR library for use in the browser, Node and other JS runtimes.
+OCR engine for use in the browser and Node.
+
+tesseract-wasm can process document images and detect and recognize the content
+of text in many languages.
 
 ## Features
 
-This build has been optimized for use in the browser by:
+This Tesseract build has been optimized for use in the browser by:
 
 - Stripping functionality which is not needed in a browser environment (eg.
   code to parse various image formats) to reduce download size and improve
   startup performance. The library and English training data require a ~2.1MB
-  download (using Brotli compression).
+  download (with Brotli compression).
 
 - Using [WebAssembly SIMD](https://v8.dev/features/simd) when available
-  (Chrome >= 91, Firefox >= 90, Safari ??) to improve text recognition performance.
+  (Chrome >= 91, Firefox >= 90, Safari
+  [??](https://bugs.webkit.org/show_bug.cgi?id=222382)) to improve text
+  recognition performance.
 
 - Providing a high-level API that can be used to run web pages without blocking
   interaction and a low-level API that provides more control over execution.
@@ -51,28 +56,29 @@ latency per API call.
 import { OCRClient } from 'tesseract-wasm';
 
 async function runOCR() {
-  // Fetch the image to OCR from somewhere and load it into an `ImageBitmap`.
+  // Fetch document image and decode it into an ImageBitmap.
   const imageResponse = await fetch('./test-image.jpg');
   const imageBlob = await imageResponse.blob();
   const image = await createImageBitmap(image);
 
+  // Initialize the OCR engine. This will start a Web Worker to do the
+  // work in the background.
   const ocr = new OCRClient();
+
   try {
-    // Load the OCR training data for the language or script to support.
-    // This only needs to be called once before processing the first image.
+    // Load the appropriate OCR training data for the image(s) we want to
+    // process.
     await ocr.loadModel('eng.traineddata');
 
-    // Load the image into the Tesseract library for analysis.
     await ocr.loadImage(someImage);
 
-    // Perform layout analysis and OCR and read the text.
-    const textBoxes = await ocr.getTextBoxes('word');
-    const text = textBoxes.map(box => box.text).join(' ');
+    // Perform text recognition and return text in reading order.
+    const text = await ocr.getText();
 
     console.log('OCR text: ', text);
   } finally {
-    // Once all OCR-ing has been done, shut down the Web Worker where Tesseract
-    // is running to free up resources.
+    // Once all OCR-ing has been done, shut down the Web Worker and free up
+    // resources.
     ocr.destroy();
   }
 }
@@ -84,6 +90,14 @@ runOCR();
 
 See the `examples/` directory for projects that show usage of the library.
 
+## Documentation
+
+See JSDoc comments in the source files in `src/` for API documentation.
+
+See the Tesseract [User Manual](https://tesseract-ocr.github.io/tessdoc/) for
+information on how Tesseract works, as well as advice on [improving
+recognition](https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html).
+
 ## Development
 
 ### Prerequisites
@@ -94,8 +108,10 @@ To build this library locally, you will need:
  - [CMake](https://cmake.org)
  - [Ninja](https://ninja-build.org)
 
-The [Emscripten](https://emscripten.org) toolchain used to compile WebAssembly
-is downloaded as part of the build process.
+The [Emscripten](https://emscripten.org) toolchain used to compile C++ to
+WebAssembly is downloaded as part of the build process.
+
+To install CMake and Ninja:
 
 #### On macOS:
 
@@ -115,7 +131,7 @@ sudo apt-get install cmake ninja-build
 git clone https://github.com/robertknight/tesseract-wasm
 cd tesseract-wasm
 
-# Build WASM binary and JS runtime in dist/ folder
+# Build WebAssembly binaries and JS library in dist/ folder
 make lib
 
 # Build example projects
