@@ -86,16 +86,20 @@ class OCREngine {
       return OCRResult("Failed to load training data");
     }
 
-    // Enable page segmentation and layout analysis. Must be called after `Init`
-    // to take effect. Without this Tesseract defaults to treating the whole
-    // page as one block of text.
-    tesseract_->SetPageSegMode(tesseract::PSM_AUTO);
-
     return {};
   }
 
   OCRResult LoadImage(const std::string& image_data, int width, int height,
                       int bytes_per_pixel, int bytes_per_line) {
+    // Initialize for layout analysis only if a model has not been loaded.
+    // This is a no-op if a model has been loaded.
+    tesseract_->InitForAnalysePage();
+
+    // Enable page segmentation and layout analysis. Must be called after `Init`
+    // to take effect. Without this Tesseract defaults to treating the whole
+    // page as one block of text.
+    tesseract_->SetPageSegMode(tesseract::PSM_AUTO);
+
     auto min_buffer_len = height * bytes_per_line;
     if (image_data.size() < min_buffer_len) {
       return OCRResult("Image buffer length does not match width/height");

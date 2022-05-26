@@ -122,10 +122,6 @@ export class OCREngine {
    * @param {ImageBitmap|ImageData} image
    */
   loadImage(image) {
-    if (!this._modelLoaded) {
-      throw new Error("Model must be loaded before image");
-    }
-
     let imageData;
     if (typeof ImageBitmap !== "undefined" && image instanceof ImageBitmap) {
       imageData = imageDataFromBitmap(image);
@@ -154,7 +150,8 @@ export class OCREngine {
    *
    * This operation is relatively cheap compared to text recognition, so can
    * provide much faster results if only the location of lines/words etc. on
-   * the page is required, not the text content.
+   * the page is required, not the text content. This operation can also be
+   * performed before a text recognition model is loaded.
    *
    * This method may return a different number/positions of words on a line
    * compared to {@link getTextBoxes} due to the simpler analysis. After full
@@ -175,11 +172,16 @@ export class OCREngine {
    * not already done, and return bounding boxes and text content for a given
    * unit of text.
    *
+   * A text recognition model must be loaded with {@link loadModel} before this
+   * is called.
+   *
    * @param {TextUnit} unit
    * @return {TextItem[]}
    */
   getTextBoxes(unit) {
     this._checkImageLoaded();
+    this._checkModelLoaded();
+
     const textUnit = this._textUnitForUnit(unit);
     return jsArrayFromStdVector(this._engine.getTextBoxes(textUnit));
   }
@@ -188,11 +190,22 @@ export class OCREngine {
    * Perform layout analysis and text recognition on the current image, if
    * not already done, and return the page text as a string.
    *
+   * A text recognition model must be loaded with {@link loadModel} before this
+   * is called.
+   *
    * @return {string}
    */
   getText() {
     this._checkImageLoaded();
+    this._checkModelLoaded();
+
     return this._engine.getText();
+  }
+
+  _checkModelLoaded() {
+    if (!this._modelLoaded) {
+      throw new Error("No text recognition model loaded");
+    }
   }
 
   _checkImageLoaded() {
