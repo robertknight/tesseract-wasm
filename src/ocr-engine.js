@@ -176,14 +176,18 @@ export class OCREngine {
    * is called.
    *
    * @param {TextUnit} unit
+   * @param {(progress: number) => void} [onProgress] - Callback invoked with
+   *   recognition progress percentage
    * @return {TextItem[]}
    */
-  getTextBoxes(unit) {
+  getTextBoxes(unit, onProgress) {
     this._checkImageLoaded();
     this._checkModelLoaded();
 
     const textUnit = this._textUnitForUnit(unit);
-    return jsArrayFromStdVector(this._engine.getTextBoxes(textUnit));
+    return jsArrayFromStdVector(
+      this._engine.getTextBoxes(textUnit, onProgress)
+    );
   }
 
   /**
@@ -193,13 +197,14 @@ export class OCREngine {
    * A text recognition model must be loaded with {@link loadModel} before this
    * is called.
    *
+   * @param {(progress: number) => void} [onProgress] - Callback invoked with
+   *   recognition progress percentage
    * @return {string}
    */
-  getText() {
+  getText(onProgress) {
     this._checkImageLoaded();
     this._checkModelLoaded();
-
-    return this._engine.getText();
+    return this._engine.getText(onProgress);
   }
 
   _checkModelLoaded() {

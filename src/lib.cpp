@@ -2,6 +2,7 @@
 #include <emscripten/emscripten.h>
 #include <leptonica/allheaders.h>
 #include <tesseract/baseapi.h>
+#include <tesseract/ocrclass.h>
 
 #include <memory>
 #include <string>
@@ -63,6 +64,27 @@ struct OCRResult {
 };
 
 using namespace emscripten;
+
+class ProgressMonitor : public tesseract::ETEXT_DESC {
+ public:
+  ProgressMonitor(const emscripten::val& callback) : js_callback_(callback) {
+    progress_callback2 = progress_handler;
+  }
+
+  void ProgressChanged(int percentage) {
+    if (!js_callback_.isUndefined()) {
+      js_callback_(percentage);
+    }
+  }
+
+ private:
+  static bool progress_handler(tesseract::ETEXT_DESC* monitor, int left,
+                               int right, int top, int bottom) {
+    static_cast<ProgressMonitor*>(monitor)->ProgressChanged(monitor->progress);
+    return true;
+  }
+  emscripten::val js_callback_;
+};
 
 class OCREngine {
  public:
@@ -127,13 +149,14 @@ class OCREngine {
     return GetBoxes(unit, false /* with_text */);
   }
 
-  std::vector<TextRect> GetTextBoxes(TextUnit unit) {
-    DoOCR();
+  std::vector<TextRect> GetTextBoxes(TextUnit unit,
+                                     const emscripten::val& progress_callback) {
+    DoOCR(progress_callback);
     return GetBoxes(unit, true /* with_text */);
   }
 
-  std::string GetText() {
-    DoOCR();
+  std::string GetText(const emscripten::val& progress_callback) {
+    DoOCR(progress_callback);
     return string_from_raw(tesseract_->GetUTF8Text());
   }
 
@@ -172,12 +195,17 @@ class OCREngine {
     return boxes;
   }
 
-  void DoOCR() {
+  void DoOCR(const emscripten::val& progress_callback) {
+    ProgressMonitor monitor(progress_callback);
     if (!ocr_done_) {
-      tesseract_->Recognize(nullptr /* monitor */);
+      tesseract_->Recognize(&monitor);
       layout_analysis_done_ = true;
       ocr_done_ = true;
     }
+    // Tesseract doesn't seem to report 100% progress in `Recognize`, and
+    // won't have reported progress if OCR has already been done, so report
+    // completion ourselves.
+    monitor.ProgressChanged(100);
   }
 
   bool layout_analysis_done_ = false;

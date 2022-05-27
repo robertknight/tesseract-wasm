@@ -248,4 +248,35 @@ describe("OCREngine", () => {
       assert.include(text, phrase);
     }
   });
+
+  it("reports recognition progress", async function () {
+    this.timeout(5_000);
+
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
+    ocr.loadImage(imageData);
+
+    const progressSteps = [];
+    const text = ocr.getText((progress) => {
+      progressSteps.push(progress);
+    });
+
+    assert.isAbove(progressSteps.length, 0);
+    for (let [i, progress] in progressSteps.entries()) {
+      assert.isAboveOrEqual(progess, 0);
+      assert.isBelowOrEqual(progress, 100);
+      if (i > 0) {
+        assert.isAbove(progress, progressSteps[i - 1]);
+      }
+    }
+
+    // We should always get 100% progress at the end.
+    assert.equal(progressSteps.at(-1), 100);
+
+    // If recognition has already been completed, progress should jump to 100.
+    progressSteps.splice(0, progressSteps.length);
+    ocr.getText((progress) => {
+      progressSteps.push(progress);
+    });
+    assert.deepEqual(progressSteps, [100]);
+  });
 });
