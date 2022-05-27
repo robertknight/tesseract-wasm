@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { Worker, isMainThread, parentPort } from "node:worker_threads";
 
-import { expose, proxy, wrap } from "comlink";
+import { expose, proxy } from "comlink";
 
 // @ts-ignore
 import nodeEndpoint from "comlink/dist/esm/node-adapter.mjs";
@@ -18,18 +18,9 @@ export function resolve(path, moduleURL = import.meta.url) {
   return fileURLToPath(new URL(path, moduleURL).href);
 }
 
-/**
- * @param {string|URL} url
- */
-function initNodeWorker(url) {
-  const worker = new Worker(new URL(url));
-  const remote = wrap(nodeEndpoint(worker));
-  return { remote, terminate: () => worker.terminate() };
-}
-
 export function createOCRClient(options = {}) {
   return new OCRClient({
-    initWorker: initNodeWorker,
+    createWorker: (url) => new Worker(new URL(url)),
     workerURL: new URL(import.meta.url).href,
     ...options,
   });
