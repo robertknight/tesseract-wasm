@@ -76,6 +76,30 @@ export const layoutFlags = {
  */
 
 /**
+ * Handler that receives OCR operation progress updates.
+ *
+ * If a MessagePort is specified, progress updates are reported as messages
+ * on that channel. See notes in `OCRClient` about why this is used.
+ *
+ * @typedef {((progress: number) => void)|MessagePort} ProgressHandler
+ */
+
+/**
+ * "Normalize" the different progress handler types into a callback that can
+ * be passed to WebAssembly.
+ *
+ * @param {ProgressHandler} onProgress - Callback invoked with recognition progress percentage
+ * @return {(progress: number) => void}
+ */
+function progressCallback(onProgress) {
+  if (onProgress instanceof MessagePort) {
+    /** @param {number} progress */
+    return (progress) => onProgress.postMessage({ progress });
+  }
+  return onProgress;
+}
+
+/**
  * Low-level synchronous API for performing OCR.
  *
  */
@@ -176,8 +200,7 @@ export class OCREngine {
    * is called.
    *
    * @param {TextUnit} unit
-   * @param {(progress: number) => void} [onProgress] - Callback invoked with
-   *   recognition progress percentage
+   * @param {ProgressHandler} [onProgress]
    * @return {TextItem[]}
    */
   getTextBoxes(unit, onProgress) {
@@ -186,7 +209,10 @@ export class OCREngine {
 
     const textUnit = this._textUnitForUnit(unit);
     return jsArrayFromStdVector(
-      this._engine.getTextBoxes(textUnit, onProgress)
+      this._engine.getTextBoxes(
+        textUnit,
+        onProgress ? progressCallback(onProgress) : undefined
+      )
     );
   }
 
@@ -197,14 +223,15 @@ export class OCREngine {
    * A text recognition model must be loaded with {@link loadModel} before this
    * is called.
    *
-   * @param {(progress: number) => void} [onProgress] - Callback invoked with
-   *   recognition progress percentage
+   * @param {ProgressHandler} [onProgress]
    * @return {string}
    */
   getText(onProgress) {
     this._checkImageLoaded();
     this._checkModelLoaded();
-    return this._engine.getText(onProgress);
+    return this._engine.getText(
+      onProgress ? progressCallback(onProgress) : undefined
+    );
   }
 
   _checkModelLoaded() {

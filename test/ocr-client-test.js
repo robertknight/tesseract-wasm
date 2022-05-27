@@ -87,4 +87,25 @@ describe("OCRClient", () => {
       assert.include(text, phrase);
     }
   });
+
+  it("reports recognition progress", async function () {
+    this.timeout(5_000);
+
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
+    await ocr.loadImage(imageData);
+
+    const progressSteps = [];
+    const text = await ocr.getText((progress) => {
+      progressSteps.push(progress);
+    });
+
+    assert.isAbove(progressSteps.length, 0);
+    for (let [i, progress] in progressSteps.entries()) {
+      assert.isAboveOrEqual(progess, 0);
+      assert.isBelowOrEqual(progress, 100);
+      if (i > 0) {
+        assert.isAbove(progress, progressSteps[i - 1]);
+      }
+    }
+  });
 });
