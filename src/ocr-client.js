@@ -23,26 +23,7 @@ function createWebWorker(url) {
   return new Worker(url);
 }
 
-/**
- * Create a channel to receive progress updates from a Worker and relay them
- * to a callback.
- *
- * This channel is used rather than comlink's recommended approach to callbacks
- * (see https://github.com/GoogleChromeLabs/comlink#callbacks) because that is
- * prone to triggering warnings in Node about too many event listeners being
- * added to a MessagePort, due to the way comlink internally adds and removes
- * listeners when the proxied callback is invoked.
- *
- * @param {(progress: number) => void} onProgress
- */
-function createProgressChannel(onProgress) {
-  const { port1, port2 } = new MessageChannel();
-  port1.onmessage = (event) => {
-    const { progress } = event.data;
-    onProgress(progress);
-  };
-  return comlink.transfer(port2, [port2]);
-}
+/** @typedef {(progress: number) => void} ProgressListener */
 
 /**
  * High-level async API for performing OCR.
@@ -75,15 +56,53 @@ export class OCRClient {
     const worker = createWorker(workerURL);
     this._worker = worker;
 
+    /** @type {ProgressListener[]} progress */
+    this._progressListeners = [];
+
     const endpoint =
       "addEventListener" in worker ? worker : nodeEndpoint(worker);
     const remote = comlink.wrap(endpoint);
 
-    this._ocrEngine = remote.createOCREngine({ wasmBinary });
+    // Create a channel for the worker to send us progress updates during
+    // operations. We use a separate channel instead of following comlink's
+    // recommended recipe for callback arguments for two reasons:
+    //
+    // 1. If using `comlink.proxy(callback)`, event listeners get added to the
+    //    MessagePort each time the callback is invoked and removed when the
+    //    MessagePort receives a "message" response. If the callback is triggered
+    //    many times in one event loop turn, this will trigger warnings from
+    //    Node about having too many listeners. It is also quite inefficient.
+    //
+    // 2. Firefox has an issue where messages sent on a newly received port are
+    //    not dispatched until the next event loop turn. This means that we
+    //    need to send the port to the worker ahead of time.
+    //    I think https://bugzilla.mozilla.org/show_bug.cgi?id=1752287 is
+    //    relevant.
+    const { port1, port2 } = new MessageChannel();
+    this._progressChannel = port1;
+    this._progressChannel.onmessage = (e) => {
+      // We ought to have some mechanism to dispatch an update only to
+      // applicable listeners. In typical usage there will only be one expensive
+      // operation happening at a time for an OCRClient instance (OCR of the
+      // currently loaded image), so we can get away with just notifying all
+      // registered listeners.
+      const { progress } = e.data;
+      for (let listener of this._progressListeners) {
+        listener(progress);
+      }
+    };
+
+    this._ocrEngine = remote.createOCREngine(
+      {
+        wasmBinary,
+      },
+      comlink.transfer(port2, [port2])
+    );
   }
 
   async destroy() {
     this._worker.terminate();
+    this._progressChannel.close();
   }
 
   /**
@@ -150,33 +169,54 @@ export class OCRClient {
    * unit of text.
    *
    * @param {TextUnit} unit
-   * @param {(progress: number) => void} [onProgress]
+   * @param {ProgressListener} [onProgress]
    * @return {Promise<TextItem[]>}
    */
   async getTextBoxes(unit, onProgress) {
     const engine = await this._ocrEngine;
-    const progressChannel = onProgress
-      ? createProgressChannel(onProgress)
-      : undefined;
-    const result = await engine.getTextBoxes(unit, progressChannel);
-    progressChannel?.close();
-    return result;
+
+    if (onProgress) {
+      this._addProgressListener(onProgress);
+    }
+    try {
+      return await engine.getTextBoxes(unit);
+    } finally {
+      if (onProgress) {
+        this._removeProgressListener(onProgress);
+      }
+    }
   }
 
   /**
    * Perform layout analysis and text recognition on the current image, if
    * not already done, and return the image's text as a string.
    *
-   * @param {(progress: number) => void} [onProgress]
+   * @param {ProgressListener} [onProgress]
    * @return {Promise<string>}
    */
   async getText(onProgress) {
     const engine = await this._ocrEngine;
-    const progressChannel = onProgress
-      ? createProgressChannel(onProgress)
-      : undefined;
-    const result = await engine.getText(progressChannel);
-    progressChannel?.close();
-    return result;
+    if (onProgress) {
+      this._addProgressListener(onProgress);
+    }
+    try {
+      return await engine.getText();
+    } finally {
+      if (onProgress) {
+        this._removeProgressListener(onProgress);
+      }
+    }
+  }
+
+  /** @param {ProgressListener} listener */
+  _addProgressListener(listener) {
+    this._progressListeners.push(listener);
+  }
+
+  /** @param {ProgressListener} listener */
+  _removeProgressListener(listener) {
+    this._progressListeners = this._progressListeners.filter(
+      (l) => l !== listener
+    );
   }
 }

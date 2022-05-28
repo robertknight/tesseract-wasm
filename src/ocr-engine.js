@@ -78,26 +78,8 @@ export const layoutFlags = {
 /**
  * Handler that receives OCR operation progress updates.
  *
- * If a MessagePort is specified, progress updates are reported as messages
- * on that channel. See notes in `OCRClient` about why this is used.
- *
- * @typedef {((progress: number) => void)|MessagePort} ProgressHandler
+ * @typedef {((progress: number) => void)} ProgressHandler
  */
-
-/**
- * "Normalize" the different progress handler types into a callback that can
- * be passed to WebAssembly.
- *
- * @param {ProgressHandler} onProgress - Callback invoked with recognition progress percentage
- * @return {(progress: number) => void}
- */
-function progressCallback(onProgress) {
-  if (onProgress instanceof MessagePort) {
-    /** @param {number} progress */
-    return (progress) => onProgress.postMessage({ progress });
-  }
-  return onProgress;
-}
 
 /**
  * Low-level synchronous API for performing OCR.
@@ -106,12 +88,14 @@ function progressCallback(onProgress) {
 export class OCREngine {
   /**
    * @param {any} tessLib
+   * @param {MessagePort} [progressChannel]
    */
-  constructor(tessLib) {
+  constructor(tessLib, progressChannel) {
     this._tesseractLib = tessLib;
     this._engine = new tessLib.OCREngine();
     this._modelLoaded = false;
     this._imageLoaded = false;
+    this._progressChannel = progressChannel;
   }
 
   /**
@@ -208,10 +192,15 @@ export class OCREngine {
     this._checkModelLoaded();
 
     const textUnit = this._textUnitForUnit(unit);
+
     return jsArrayFromStdVector(
       this._engine.getTextBoxes(
         textUnit,
-        onProgress ? progressCallback(onProgress) : undefined
+        /** @param {number} progress */
+        (progress) => {
+          onProgress?.(progress);
+          this._progressChannel?.postMessage({ progress });
+        }
       )
     );
   }
@@ -230,7 +219,11 @@ export class OCREngine {
     this._checkImageLoaded();
     this._checkModelLoaded();
     return this._engine.getText(
-      onProgress ? progressCallback(onProgress) : undefined
+      /** @param {number} progress */
+      (progress) => {
+        onProgress?.(progress);
+        this._progressChannel?.postMessage({ progress });
+      }
     );
   }
 
@@ -289,8 +282,9 @@ function resolve(path, baseURL) {
  *
  * @param {object} options
  *   @param {Uint8Array|ArrayBuffer} [options.wasmBinary]
+ *   @param {MessagePort} [options.progressChannel]
  */
-export async function createOCREngine({ wasmBinary } = {}) {
+export async function createOCREngine({ wasmBinary, progressChannel } = {}) {
   if (!wasmBinary) {
     const wasmPath = wasmSIMDSupported()
       ? "./tesseract-core.wasm"
@@ -304,5 +298,5 @@ export async function createOCREngine({ wasmBinary } = {}) {
     wasmBinary = await wasmBinaryResponse.arrayBuffer();
   }
   const tessLib = await initTesseractCore({ wasmBinary });
-  return new OCREngine(tessLib);
+  return new OCREngine(tessLib, progressChannel);
 }

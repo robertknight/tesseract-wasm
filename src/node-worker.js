@@ -31,12 +31,13 @@ if (!isMainThread) {
     /**
      * @param {object} options
      *   @param {Uint8Array|ArrayBuffer} [options.wasmBinary]
+     * @param {MessagePort} [progressChannel]
      */
-    createOCREngine: async ({ wasmBinary }) => {
+    createOCREngine: async ({ wasmBinary }, progressChannel) => {
       if (!wasmBinary) {
         wasmBinary = await readFile(resolve("../dist/tesseract-core.wasm"));
       }
-      const engine = await createOCREngine({ wasmBinary });
+      const engine = await createOCREngine({ wasmBinary, progressChannel });
       return proxy(engine);
     },
   };
