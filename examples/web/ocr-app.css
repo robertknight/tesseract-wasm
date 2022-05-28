@@ -1,0 +1,78 @@
+body {
+  font-family: sans-serif;
+}
+
+.FileDropZone {
+  display: flex;
+  align-items: center;
+  background-color: #ddd;
+  border: 2px solid black;
+  font-size: 1.5rem;
+  font-weight: bold;
+  height: 100px;
+  justify-content: center;
+}
+
+.FileDropZone.is-hovered {
+  background-color: #aaa;
+}
+
+.ProgressBar {
+  border: 2px solid #ddd;
+  height: 5px;
+}
+
+.ProgressBar__bar {
+  background-color: #6666ff;
+  height: 100%;
+}
+
+.OCRDemoApp {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.OCRDemoApp__error {
+  background-color: #ff7777;
+  padding: 5px;
+}
+
+.OCRDemoApp__output {
+  position: relative;
+  border: 2px solid #aaa;
+}
+
+.OCRDemoApp__doc-image {
+  width: 100%;
+}
+
+.OCRDemoApp__word-boxes {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.OCRDemoApp__text {
+  border: 2px solid #aaa;
+  padding: 1em;
+  overflow-x: scroll;
+}
+
+.OCRWordBox {
+  border: 1px solid red;
+}
+
+.OCRWordBox__content {
+  position: relative;
+  background-color: #aaffff;
+  z-index: 10;
+  white-space: nowrap;
+}

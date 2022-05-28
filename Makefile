@@ -173,7 +173,3 @@ dist/tesseract-core-fallback.wasm: build/tesseract-core-fallback.wasm
 
 dist/lib.js dist/tesseract-worker.js: src/*.js build/tesseract-core.js build/tesseract-core.wasm build/tesseract-core-fallback.wasm
 	node_modules/.bin/rollup -c rollup.config.js
-
-.PHONY: examples
-examples: examples/*.js
-	node_modules/.bin/rollup -c rollup-examples.config.js

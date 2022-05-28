@@ -134,9 +134,17 @@ cd tesseract-wasm
 # Build WebAssembly binaries and JS library in dist/ folder
 make lib
 
-# Build example projects
-make examples
-
 # Run tests
 make test
+```
+
+To test your local build of the library with the example projects, or your own
+projects, you can use [yalc](https://www.npmjs.com/package/yalc).
+
+```sh
+# In this project
+yalc publish
+
+# In the project where you want to use your local build of tesseract-wasm
+yalc link tesseract-wasm
 ```

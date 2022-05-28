@@ -1,0 +1,26 @@
+{
+  "name": "tesseract-wasm-example-web",
+  "version": "1.0.0",
+  "description": "Demo app for tesseract-wasm",
+  "main": "ocr-app.js",
+  "scripts": {
+    "build": "esbuild ocr-app.js --loader:.js=jsx --bundle --outfile=build/ocr-app.bundle.js",
+    "serve": "esbuild ocr-app.js --loader:.js=jsx --bundle --servedir=. --outfile=build/ocr-app.bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robertknight/tesseract-wasm.git"
+  },
+  "author": "Robert Knight <robertknight@gmail.com>",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/robertknight/tesseract-wasm/issues"
+  },
+  "homepage": "https://github.com/robertknight/tesseract-wasm#readme",
+  "devDependencies": {
+    "classnames": "^2.3.1",
+    "esbuild": "^0.14.41",
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0"
+  }
+}
