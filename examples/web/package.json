@@ -21,6 +21,7 @@
     "classnames": "^2.3.1",
     "esbuild": "^0.14.41",
     "react": "^18.1.0",
-    "react-dom": "^18.1.0"
+    "react-dom": "^18.1.0",
+    "tesseract-wasm": "^0.1.0"
   }
 }
