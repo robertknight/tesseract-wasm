@@ -42,7 +42,20 @@ function FileDropZone({ onDrop }) {
         }
       }}
     >
-      Drop image here to OCR
+      Drop image here
+      <div>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const files = e.target.files;
+            if (!files.length) {
+              return;
+            }
+            onDrop(files.item(0));
+          }}
+        />
+      </div>
     </div>
   );
 }
@@ -72,7 +85,11 @@ function OCRWordBox({ box, imageWidth, imageHeight }) {
       onMouseLeave={() => setHover(false)}
       title={box.text}
     >
-      {hover && <div className="OCRWordBox__content">{box.text}</div>}
+      {hover && (
+        <div className="OCRWordBox__content">
+          <div className="OCRWordBox__text">{box.text}</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -94,11 +111,13 @@ function OCRDemoApp() {
 
     setError(null);
     setWordBoxes(null);
-    setOCRProgress(null);
+
+    // Set progress to `0` rather than `null` here to show the progress bar
+    // immediately after an image is selected.
+    setOCRProgress(0);
 
     const context = canvasRef.current.getContext("2d");
     context.drawImage(documentImage, 0, 0);
-    setError(null);
 
     const doOCR = async () => {
       if (!ocrClient.current) {
@@ -136,25 +155,25 @@ function OCRDemoApp() {
     doOCR();
   }, [documentImage]);
 
+  const loadImage = async (file) => {
+    try {
+      const image = await createImageBitmap(file);
+      setDocumentImage(image);
+    } catch {
+      setError(new Error("Could not read document image"));
+    }
+  };
+
   return (
     <div className="OCRDemoApp">
-      <h1>OCR Demo</h1>
+      <h1>tesseract-wasm demo</h1>
       {error && (
         <div className="OCRDemoApp__error">
           <b>Error:</b> {error.message}
         </div>
       )}
+      <FileDropZone onDrop={loadImage} />
       {ocrProgress !== null && <ProgressBar value={ocrProgress} />}
-      <FileDropZone
-        onDrop={async (file) => {
-          try {
-            const image = await createImageBitmap(file);
-            setDocumentImage(image);
-          } catch {
-            setError(new Error("Could not read document image"));
-          }
-        }}
-      />
       {documentImage && (
         <div className="OCRDemoApp__output">
           <canvas
