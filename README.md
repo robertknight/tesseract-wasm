@@ -1,5 +1,7 @@
 # tesseract-wasm
 
+![npm package](https://img.shields.io/npm/v/tesseract-wasm)
+
 A WebAssembly build of the [Tesseract](https://github.com/tesseract-ocr/tesseract)
 OCR engine for use in the browser and Node.
 
