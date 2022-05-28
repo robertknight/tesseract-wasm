@@ -31,5 +31,9 @@
   "dependencies": {
     "comlink": "^4.3.1"
   },
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/*",
+    "src/node-worker.js"
+  ]
 }
