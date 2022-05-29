@@ -90,7 +90,8 @@ runOCR();
 
 ## Examples
 
-See the `examples/` directory for projects that show usage of the library.
+See the `examples/` directory for projects that show usage of the library in
+the browser and Node.
 
 ## Documentation
 
