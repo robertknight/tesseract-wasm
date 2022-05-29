@@ -9,6 +9,7 @@
     "./node": "./src/node-worker.js"
   },
   "scripts": {
+    "test": "make test",
     "typecheck": "tsc"
   },
   "repository": {
