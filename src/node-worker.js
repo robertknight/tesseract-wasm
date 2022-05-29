@@ -18,6 +18,16 @@ export function resolve(path, moduleURL = import.meta.url) {
   return fileURLToPath(new URL(path, moduleURL).href);
 }
 
+/**
+ * Load the compiled WebAssembly binary from the tesseract-wasm package.
+ */
+export function loadWasmBinary() {
+  return readFile(resolve("../dist/tesseract-core.wasm"));
+}
+
+/**
+ * Create an async OCRClient that runs Tesseract in a Node worker thread.
+ */
 export function createOCRClient(options = {}) {
   return new OCRClient({
     createWorker: (url) => new Worker(new URL(url)),
@@ -35,7 +45,7 @@ if (!isMainThread) {
      */
     createOCREngine: async ({ wasmBinary }, progressChannel) => {
       if (!wasmBinary) {
-        wasmBinary = await readFile(resolve("../dist/tesseract-core.wasm"));
+        wasmBinary = await loadWasmBinary();
       }
       const engine = await createOCREngine({ wasmBinary, progressChannel });
       return proxy(engine);

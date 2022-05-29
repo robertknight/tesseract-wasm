@@ -1,0 +1,17 @@
+{
+  "name": "tesseract-wasm-example-node-server",
+  "version": "1.0.0",
+  "description": "This demo uses the high-level `OCRClient` API to perform OCR in HTTP requests.",
+  "type": "module",
+  "main": "ocr-server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Robert Knight <robertknight@gmail.com>",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "node-fetch": "^3.2.4",
+    "sharp": "^0.30.5",
+    "tesseract-wasm": "^0.1.0"
+  }
+}
