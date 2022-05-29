@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "description": "OCR library built on Tesseract",
   "type": "module",
-  "main": "dist/lib.js",
+  "main": "./dist/lib.js",
+  "exports": {
+    ".": "./dist/lib.js",
+    "./node": "./src/node-worker.js"
+  },
   "scripts": {
     "typecheck": "tsc"
   },
