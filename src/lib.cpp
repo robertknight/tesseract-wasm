@@ -86,6 +86,31 @@ class ProgressMonitor : public tesseract::ETEXT_DESC {
   emscripten::val js_callback_;
 };
 
+/**
+ * Wrapper around a Leptonica image.
+ */
+class Image {
+ public:
+  Image(int width, int height) { pix_ = pixCreate(width, height, 32); }
+
+  ~Image() { pixDestroy(&pix_); }
+
+  int Width() const { return pixGetWidth(pix_); }
+
+  int Height() const { return pixGetHeight(pix_); }
+
+  emscripten::val Data() const {
+    auto len = Width() * Height();
+    return emscripten::val(
+        emscripten::typed_memory_view(len, pixGetData(pix_)));
+  }
+
+  PIX* Pix() const { return pix_; }
+
+ private:
+  PIX* pix_;
+};
+
 class OCREngine {
  public:
   OCREngine() : tesseract_(new tesseract::TessBaseAPI()) {}
@@ -111,8 +136,7 @@ class OCREngine {
     return {};
   }
 
-  OCRResult LoadImage(const std::string& image_data, int width, int height,
-                      int bytes_per_pixel, int bytes_per_line) {
+  OCRResult LoadImage(const Image& image) {
     // Initialize for layout analysis only if a model has not been loaded.
     // This is a no-op if a model has been loaded.
     tesseract_->InitForAnalysePage();
@@ -122,18 +146,8 @@ class OCREngine {
     // page as one block of text.
     tesseract_->SetPageSegMode(tesseract::PSM_AUTO);
 
-    auto min_buffer_len = height * bytes_per_line;
-    if (image_data.size() < min_buffer_len) {
-      return OCRResult("Image buffer length does not match width/height");
-    }
-    if (width <= 0 || height <= 0) {
-      return OCRResult("Image width or height is zero");
-    }
-
-    tesseract_->SetImage(
-        reinterpret_cast<const unsigned char*>(image_data.data()), width,
-        height, bytes_per_pixel, bytes_per_line);
-    tesseract_->SetRectangle(0, 0, width, height);
+    tesseract_->SetImage(image.Pix());
+    tesseract_->SetRectangle(0, 0, image.Width(), image.Height());
 
     layout_analysis_done_ = false;
     ocr_done_ = false;
@@ -225,6 +239,8 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
       .field("flags", &TextRect::flags)
       .field("confidence", &TextRect::confidence)
       .field("text", &TextRect::text);
+
+  class_<Image>("Image").constructor<int, int>().function("data", &Image::Data);
 
   class_<OCREngine>("OCREngine")
       .constructor<>()
