@@ -100,6 +100,7 @@ function OCRDemoApp() {
   const [documentText, setDocumentText] = useState(null);
   const [error, setError] = useState(null);
   const [ocrProgress, setOCRProgress] = useState(null);
+  const [status, setStatus] = useState(null);
   const [wordBoxes, setWordBoxes] = useState([]);
 
   const canvasRef = useRef(null);
@@ -123,21 +124,32 @@ function OCRDemoApp() {
       if (!ocrClient.current) {
         // Initialize the OCR engine when recognition is performed for the first
         // time.
+        setStatus("Initializing OCR engine");
         ocrClient.current = new OCRClient({
           // In a production application, you would serve the tesseract-worker.js
           // and .wasm files from node_modules/tesseract-wasm/dist/ alongside
           // your JS bundle, and setting `workerURL` would not be required.
+          //
+          // Note that the worker must be served from the same origin as your
+          // application.
           workerURL: "node_modules/tesseract-wasm/dist/tesseract-worker.js",
         });
 
-        await ocrClient.current.loadModel("./eng.traineddata");
+        // Fetch OCR model. In production you would probably want to serve this
+        // yourself and ensure that the model is well compressed (eg.  using
+        // Brotli) to reduce the download size and cached for a long time.
+        await ocrClient.current.loadModel(
+          "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/eng.traineddata"
+        );
       }
       const ocr = ocrClient.current;
 
       try {
+        setStatus("Loading image");
         await ocr.loadImage(documentImage);
 
         // Perform OCR and display progress.
+        setStatus("Recognizing text");
         let boxes = await ocr.getTextBoxes("word", setOCRProgress);
         boxes = boxes.filter((box) => box.text.trim() !== "");
         setWordBoxes(boxes);
@@ -150,6 +162,7 @@ function OCRDemoApp() {
         setError(err);
       } finally {
         setOCRProgress(null);
+        setStatus(null);
       }
     };
     doOCR();
@@ -173,6 +186,7 @@ function OCRDemoApp() {
         </div>
       )}
       <FileDropZone onDrop={loadImage} />
+      {status !== null && <div>{status}…</div>}
       {ocrProgress !== null && <ProgressBar value={ocrProgress} />}
       {documentImage && (
         <div className="OCRDemoApp__output">
