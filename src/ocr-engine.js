@@ -84,11 +84,13 @@ export const layoutFlags = {
 /**
  * Low-level synchronous API for performing OCR.
  *
+ * Instances are constructed using {@link createOCREngine}.
  */
-export class OCREngine {
+class OCREngine {
   /**
-   * @param {any} tessLib
-   * @param {MessagePort} [progressChannel]
+   * @param {any} tessLib - Emscripten entry point for the compiled WebAssembly module.
+   * @param {MessagePort} [progressChannel] - Channel used to report progress
+   *   updates when OCREngine is run on a background thread
    */
   constructor(tessLib, progressChannel) {
     this._tesseractLib = tessLib;
