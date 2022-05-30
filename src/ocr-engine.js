@@ -58,12 +58,16 @@ export const layoutFlags = {
  */
 
 /**
+ * Item of text found in a document image by layout analysis.
+ *
  * @typedef BoxItem
  * @prop {IntRect} rect
  * @prop {number} flags - Combination of flags from {@link layoutFlags}
  */
 
 /**
+ * Item of text found in a document image by layout analysis and OCR.
+ *
  * @typedef TextItem
  * @prop {IntRect} rect
  * @prop {number} flags - Combination of flags from {@link layoutFlags}
@@ -254,6 +258,7 @@ class OCREngine {
     }
   }
 }
+
 function wasmSIMDSupported() {
   // Tiny WebAssembly file generated from the following source using `wat2wasm`:
   //

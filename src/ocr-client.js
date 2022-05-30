@@ -26,7 +26,8 @@ function createWebWorker(url) {
 /** @typedef {(progress: number) => void} ProgressListener */
 
 /**
- * High-level async API for performing OCR.
+ * High-level async API for performing document image layout analysis and
+ * OCR.
  *
  * In the browser, this class can be constructed directly. In Node, use the
  * `createOCRClient` helper from `node-worker.js`.
