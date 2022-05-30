@@ -129,6 +129,9 @@ function OCRDemoApp() {
           // In a production application, you would serve the tesseract-worker.js
           // and .wasm files from node_modules/tesseract-wasm/dist/ alongside
           // your JS bundle, and setting `workerURL` would not be required.
+          //
+          // Note that the worker must be served from the same origin as your
+          // application.
           workerURL: "node_modules/tesseract-wasm/dist/tesseract-worker.js",
         });
 
