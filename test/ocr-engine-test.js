@@ -62,21 +62,25 @@ describe("OCREngine", () => {
 
   [
     // Image size does not match buffer size
-    {
-      data: new ArrayBuffer(10),
-      width: 100,
-      height: 100,
-    },
+    [
+      {
+        data: new Uint8ClampedArray(10),
+        width: 100,
+        height: 100,
+      },
+      "Image data length does not match width/height",
+    ],
+
     // Zero width image
-    emptyImage(0, 100),
+    [emptyImage(0, 100), "Image width or height is zero"],
 
     // Zero height image
-    emptyImage(100, 0),
-  ].forEach((imageData) => {
+    [emptyImage(100, 0), "Image width or height is zero"],
+  ].forEach(([imageData, expectedError]) => {
     it("throws an error if image fails to load", () => {
       assert.throws(() => {
         ocr.loadImage(imageData);
-      }, "Failed to load image");
+      }, expectedError);
     });
   });
 

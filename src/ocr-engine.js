@@ -143,13 +143,27 @@ class OCREngine {
       imageData = /** @type {ImageData} */ (image);
     }
 
-    const result = this._engine.loadImage(
-      imageData.data,
+    if (imageData.data.length < imageData.width * imageData.height * 4) {
+      throw new Error("Image data length does not match width/height");
+    }
+
+    if (imageData.width <= 0 || imageData.height <= 0) {
+      throw new Error("Image width or height is zero");
+    }
+
+    // Allocate a temporary internal image for transfering the image data into
+    // Tesseract
+    const engineImage = new this._tesseractLib.Image(
       imageData.width,
-      imageData.height,
-      4 /* bytesPerPixel */,
-      imageData.width * 4 /* bytesPerLine */
+      imageData.height
     );
+    const engineImageBuf = engineImage.data();
+    engineImageBuf.set(new Uint32Array(imageData.data.buffer));
+
+    // Load the image. This will take a copy of the image within Tesseract, so
+    // we can release the original afterwards.
+    const result = this._engine.loadImage(engineImage);
+    engineImage.delete();
 
     if (result.error) {
       throw new Error("Failed to load image");
