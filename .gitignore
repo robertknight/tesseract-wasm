@@ -3,3 +3,6 @@ dist/
 install/
 node_modules/
 third_party/
+
+# Allow build, dist etc. folders in docs dir
+!docs/**
