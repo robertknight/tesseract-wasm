@@ -4,7 +4,7 @@
   "description": "Demo app for tesseract-wasm",
   "main": "ocr-app.js",
   "scripts": {
-    "build": "esbuild ocr-app.js --loader:.js=jsx --bundle --outfile=build/ocr-app.bundle.js",
+    "build": "esbuild ocr-app.js --minify --loader:.js=jsx --bundle --outfile=build/ocr-app.bundle.js",
     "serve": "esbuild ocr-app.js --loader:.js=jsx --bundle --servedir=. --outfile=build/ocr-app.bundle.js"
   },
   "repository": {
