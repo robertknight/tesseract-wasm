@@ -5,8 +5,9 @@
 A WebAssembly build of the [Tesseract](https://github.com/tesseract-ocr/tesseract)
 OCR engine for use in the browser and Node.
 
-tesseract-wasm can process document images and detect and recognize the content
-of text in many languages.
+tesseract-wasm can detect and recognize text in document images. It supports multiple languages via different [trained models](https://tesseract-ocr.github.io/tessdoc/Data-Files).
+
+👉 [**Try the demo**](https://robertknight.github.io/tesseract-wasm/) (Currently supports English)
 
 ## Features
 
