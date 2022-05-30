@@ -58,12 +58,16 @@ export const layoutFlags = {
  */
 
 /**
+ * Item of text found in a document image by layout analysis.
+ *
  * @typedef BoxItem
  * @prop {IntRect} rect
  * @prop {number} flags - Combination of flags from {@link layoutFlags}
  */
 
 /**
+ * Item of text found in a document image by layout analysis and OCR.
+ *
  * @typedef TextItem
  * @prop {IntRect} rect
  * @prop {number} flags - Combination of flags from {@link layoutFlags}
@@ -84,11 +88,13 @@ export const layoutFlags = {
 /**
  * Low-level synchronous API for performing OCR.
  *
+ * Instances are constructed using {@link createOCREngine}.
  */
-export class OCREngine {
+class OCREngine {
   /**
-   * @param {any} tessLib
-   * @param {MessagePort} [progressChannel]
+   * @param {any} tessLib - Emscripten entry point for the compiled WebAssembly module.
+   * @param {MessagePort} [progressChannel] - Channel used to report progress
+   *   updates when OCREngine is run on a background thread
    */
   constructor(tessLib, progressChannel) {
     this._tesseractLib = tessLib;
@@ -252,6 +258,7 @@ export class OCREngine {
     }
   }
 }
+
 function wasmSIMDSupported() {
   // Tiny WebAssembly file generated from the following source using `wat2wasm`:
   //
@@ -278,15 +285,27 @@ function resolve(path, baseURL) {
 }
 
 /**
+ * Return true if the current JS runtime supports all the WebAssembly features
+ * needed for the "fast" WebAssembly build. If not, the "fallback" version must
+ * be used.
+ */
+export function supportsFastBuild() {
+  return wasmSIMDSupported();
+}
+
+/**
  * Initialize the OCR library and return a new {@link OCREngine}.
  *
  * @param {object} options
- *   @param {Uint8Array|ArrayBuffer} [options.wasmBinary]
+ *   @param {Uint8Array|ArrayBuffer} [options.wasmBinary] - WebAssembly binary
+ *     to load. This can be used to customize how the binary URL is determined
+ *     and fetched. {@link supportsFastBuild} can be used to determine which
+ *     build to load.
  *   @param {MessagePort} [options.progressChannel]
  */
 export async function createOCREngine({ wasmBinary, progressChannel } = {}) {
   if (!wasmBinary) {
-    const wasmPath = wasmSIMDSupported()
+    const wasmPath = supportsFastBuild()
       ? "./tesseract-core.wasm"
       : "./tesseract-core-fallback.wasm";
 

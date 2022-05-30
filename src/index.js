@@ -1,2 +1,2 @@
 export { OCRClient } from "./ocr-client";
-export { createOCREngine, layoutFlags } from "./ocr-engine";
+export { createOCREngine, layoutFlags, supportsFastBuild } from "./ocr-engine";
