@@ -130,7 +130,12 @@ function OCRDemoApp() {
           workerURL: "node_modules/tesseract-wasm/dist/tesseract-worker.js",
         });
 
-        await ocrClient.current.loadModel("./eng.traineddata");
+        // Fetch OCR model. In production you would probably want to serve this
+        // yourself and ensure that the model is well compressed (eg.  using
+        // Brotli) to reduce the download size and cached for a long time.
+        await ocrClient.current.loadModel(
+          "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/eng.traineddata"
+        );
       }
       const ocr = ocrClient.current;
 
