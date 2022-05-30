@@ -100,6 +100,7 @@ function OCRDemoApp() {
   const [documentText, setDocumentText] = useState(null);
   const [error, setError] = useState(null);
   const [ocrProgress, setOCRProgress] = useState(null);
+  const [status, setStatus] = useState(null);
   const [wordBoxes, setWordBoxes] = useState([]);
 
   const canvasRef = useRef(null);
@@ -123,6 +124,7 @@ function OCRDemoApp() {
       if (!ocrClient.current) {
         // Initialize the OCR engine when recognition is performed for the first
         // time.
+        setStatus("Initializing OCR engine");
         ocrClient.current = new OCRClient({
           // In a production application, you would serve the tesseract-worker.js
           // and .wasm files from node_modules/tesseract-wasm/dist/ alongside
@@ -140,9 +142,11 @@ function OCRDemoApp() {
       const ocr = ocrClient.current;
 
       try {
+        setStatus("Loading image");
         await ocr.loadImage(documentImage);
 
         // Perform OCR and display progress.
+        setStatus("Recognizing text");
         let boxes = await ocr.getTextBoxes("word", setOCRProgress);
         boxes = boxes.filter((box) => box.text.trim() !== "");
         setWordBoxes(boxes);
@@ -155,6 +159,7 @@ function OCRDemoApp() {
         setError(err);
       } finally {
         setOCRProgress(null);
+        setStatus(null);
       }
     };
     doOCR();
@@ -178,6 +183,7 @@ function OCRDemoApp() {
         </div>
       )}
       <FileDropZone onDrop={loadImage} />
+      {status !== null && <div>{status}…</div>}
       {ocrProgress !== null && <ProgressBar value={ocrProgress} />}
       {documentImage && (
         <div className="OCRDemoApp__output">
