@@ -3,7 +3,11 @@ import { readFile } from "node:fs/promises";
 
 import { assert } from "chai";
 
-import { createOCREngine, layoutFlags } from "../dist/lib.js";
+import {
+  createOCREngine,
+  layoutFlags,
+  supportsFastBuild,
+} from "../dist/lib.js";
 import { loadImage, resolve } from "./util.js";
 
 const { StartOfLine, EndOfLine } = layoutFlags;
@@ -38,6 +42,12 @@ function emptyImage(width = 100, height = 100) {
     height,
   };
 }
+
+describe("supportsFastBuild", () => {
+  it("returns true in a modern Node engine", () => {
+    assert.isTrue(supportsFastBuild());
+  });
+});
 
 describe("OCREngine", () => {
   let ocr;

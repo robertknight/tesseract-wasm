@@ -278,15 +278,27 @@ function resolve(path, baseURL) {
 }
 
 /**
+ * Return true if the current JS runtime supports all the WebAssembly features
+ * needed for the "fast" WebAssembly build. If not, the "fallback" version must
+ * be used.
+ */
+export function supportsFastBuild() {
+  return wasmSIMDSupported();
+}
+
+/**
  * Initialize the OCR library and return a new {@link OCREngine}.
  *
  * @param {object} options
- *   @param {Uint8Array|ArrayBuffer} [options.wasmBinary]
+ *   @param {Uint8Array|ArrayBuffer} [options.wasmBinary] - WebAssembly binary
+ *     to load. This can be used to customize how the binary URL is determined
+ *     and fetched. {@link supportsFastBuild} can be used to determine which
+ *     build to load.
  *   @param {MessagePort} [options.progressChannel]
  */
 export async function createOCREngine({ wasmBinary, progressChannel } = {}) {
   if (!wasmBinary) {
-    const wasmPath = wasmSIMDSupported()
+    const wasmPath = supportsFastBuild()
       ? "./tesseract-core.wasm"
       : "./tesseract-core-fallback.wasm";
 
