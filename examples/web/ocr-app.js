@@ -42,7 +42,7 @@ function FileDropZone({ onDrop }) {
         }
       }}
     >
-      Drop image here
+      Drop an image here to OCR it
       <div>
         <input
           type="file"
@@ -124,8 +124,6 @@ function OCRDemoApp() {
       if (!ocrClient.current) {
         // Initialize the OCR engine when recognition is performed for the first
         // time.
-        setStatus("Initializing OCR engine");
-
         const isGitHubPages = location.hostname.endsWith(".github.io");
         const options = {};
         if (!isGitHubPages) {
@@ -143,6 +141,7 @@ function OCRDemoApp() {
         // Fetch OCR model. In production you would probably want to serve this
         // yourself and ensure that the model is well compressed (eg.  using
         // Brotli) to reduce the download size and cached for a long time.
+        setStatus("Fetching text recognition model");
         await ocrClient.current.loadModel(
           "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/eng.traineddata"
         );
@@ -184,7 +183,40 @@ function OCRDemoApp() {
 
   return (
     <div className="OCRDemoApp">
-      <h1>tesseract-wasm demo</h1>
+      <header className="OCRDemoApp__header">
+        <h1>tesseract-wasm</h1>
+        <div className="u-grow" />
+        <a href="https://github.com/robertknight/tesseract-wasm">
+          <img
+            className="OCRDemoApp__gh-logo"
+            src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+          />
+        </a>
+      </header>
+      <p>
+        A <a href="https://webassembly.org">WebAssembly</a> build of the{" "}
+        <a href="https://github.com/tesseract-ocr/tesseract">Tesseract</a> OCR
+        engine for use in the browser and Node. It detects and recognizes text
+        in document images.
+      </p>
+      <p>
+        This build has been optimized for modern browsers by using{" "}
+        <a href="https://v8.dev/features/simd">WebAssembly SIMD</a> (where
+        available) to speed up the neural network used for text recognition.
+        Code which duplicates browser functionality (eg. parsing of various
+        image formats) has been stripped out to reduce download size.
+      </p>
+      <p>
+        See the{" "}
+        <a href="https://github.com/robertknight/tesseract-wasm">
+          project README
+        </a>{" "}
+        for usage instructions and examples. Choose an image in the picker below
+        to see it in action. Note that Tesseract is designed to work with
+        reasonably clean document images/photos rather than scenes containing
+        text. For advice on improving recognition, see the{" "}
+        <a href="https://tesseract-ocr.github.io">Tesseract User Manual</a>.
+      </p>
       {error && (
         <div className="OCRDemoApp__error">
           <b>Error:</b> {error.message}
