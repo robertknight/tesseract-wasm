@@ -1,5 +1,11 @@
 body {
   font-family: sans-serif;
+
+  --border: 2px solid #aaa;
+}
+
+p {
+  margin-top: 0;
 }
 
 .FileDropZone {
@@ -9,7 +15,7 @@ body {
   gap: 1rem;
   align-items: center;
   background-color: #ddd;
-  border: 2px solid black;
+  border: var(--border);
   font-size: 1rem;
   font-weight: bold;
   height: 100px;
@@ -21,7 +27,7 @@ body {
 }
 
 .ProgressBar {
-  border: 2px solid #ddd;
+  border: var(--border);
   height: 5px;
 }
 
@@ -48,7 +54,7 @@ body {
 
 .OCRDemoApp__output {
   position: relative;
-  border: 2px solid #aaa;
+  border: var(--border);
 }
 
 .OCRDemoApp__doc-image {
@@ -64,7 +70,7 @@ body {
 }
 
 .OCRDemoApp__text {
-  border: 2px solid #aaa;
+  border: var(--border);
   padding: 1em;
   overflow-x: scroll;
 }
@@ -95,4 +101,17 @@ body {
   background-color: #ccf;
   border: 1px solid #99f;
   white-space: nowrap;
+}
+
+.OCRDemoApp__header {
+  display: flex;
+  align-items: center;
+}
+
+.OCRDemoApp__gh-logo {
+  width: 64px;
+}
+
+.u-grow {
+  flex-grow: 1;
 }
