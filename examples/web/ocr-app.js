@@ -104,6 +104,7 @@ function OCRDemoApp() {
   const [ocrProgress, setOCRProgress] = useState(null);
   const [status, setStatus] = useState(null);
   const [wordBoxes, setWordBoxes] = useState([]);
+  const [orientation, setOrientation] = useState(null);
 
   const canvasRef = useRef(null);
 
@@ -114,6 +115,7 @@ function OCRDemoApp() {
 
     setError(null);
     setWordBoxes(null);
+    setOrientation(null);
 
     // Set progress to `0` rather than `null` here to show the progress bar
     // immediately after an image is selected.
@@ -153,6 +155,9 @@ function OCRDemoApp() {
       try {
         setStatus("Loading image");
         await ocr.loadImage(documentImage);
+
+        const orientation = await ocr.getOrientation();
+        setOrientation(orientation);
 
         // Perform OCR and display progress.
         setStatus("Recognizing text");
@@ -227,6 +232,9 @@ function OCRDemoApp() {
       <FileDropZone onDrop={loadImage} />
       {status !== null && <div>{status}…</div>}
       {ocrProgress !== null && <ProgressBar value={ocrProgress} />}
+      {orientation !== null &&
+        orientation !== 0 &&
+        `Orientation: ${orientation}°`}
       {documentImage && (
         <div className="OCRDemoApp__output">
           <canvas
