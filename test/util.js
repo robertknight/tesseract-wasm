@@ -12,14 +12,25 @@ export function resolve(path, moduleURL = import.meta.url) {
 }
 
 /**
- * @param {string} path
+ * Convert a sharp image to an ImageData-like object that can be passed to
+ * OCREngine and OCRClient.
  */
-export async function loadImage(path) {
-  const image = await sharp(path).ensureAlpha();
+export async function toImageData(image) {
   const { width, height } = await image.metadata();
   return {
     data: await image.raw().toBuffer(),
     width,
     height,
   };
+}
+
+/**
+ * Load and decode an image into an ImageData-like object.
+ *
+ * @param {string} path
+ * @return {ImageData}
+ */
+export async function loadImage(path) {
+  const image = await sharp(path).ensureAlpha();
+  return toImageData(image);
 }

@@ -241,6 +241,18 @@ class OCREngine {
     );
   }
 
+  /**
+   * Attempt to determine the orientation of the document image in degrees.
+   *
+   * Returns 0, 90, 180 or 270.
+   *
+   * @return {number}
+   */
+  getOrientation() {
+    this._checkImageLoaded();
+    return this._engine.getOrientation();
+  }
+
   _checkModelLoaded() {
     if (!this._modelLoaded) {
       throw new Error("No text recognition model loaded");

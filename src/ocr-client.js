@@ -203,6 +203,11 @@ export class OCRClient {
     }
   }
 
+  async getOrientation() {
+    const engine = await this._ocrEngine;
+    return engine.getOrientation();
+  }
+
   /** @param {ProgressListener} listener */
   _addProgressListener(listener) {
     this._progressListeners.push(listener);

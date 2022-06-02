@@ -2,13 +2,14 @@ import { dirname } from "node:path";
 import { readFile } from "node:fs/promises";
 
 import { assert } from "chai";
+import sharp from "sharp";
 
 import {
   createOCREngine,
   layoutFlags,
   supportsFastBuild,
 } from "../dist/lib.js";
-import { loadImage, resolve } from "./util.js";
+import { loadImage, resolve, toImageData } from "./util.js";
 
 const { StartOfLine, EndOfLine } = layoutFlags;
 
@@ -292,5 +293,18 @@ describe("OCREngine", () => {
       progressSteps.push(progress);
     });
     assert.deepEqual(progressSteps, [100]);
+  });
+
+  it("can determine image orientation", async () => {
+    const imagePath = resolve("./small-test-page.jpg");
+
+    for (let orient of [0, 90, 180, 270]) {
+      const image = await sharp(imagePath).ensureAlpha().rotate(orient);
+
+      ocr.loadImage(await toImageData(image));
+      const estimatedOrient = ocr.getOrientation();
+
+      assert.equal(estimatedOrient, orient);
+    }
   });
 });

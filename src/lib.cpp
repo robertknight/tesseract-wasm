@@ -176,6 +176,54 @@ class OCREngine {
     return string_from_raw(tesseract_->GetUTF8Text());
   }
 
+  int GetOrientation() {
+    // Tesseract's orientation detection is part of the legacy (non-LSTM)
+    // engine, which is not compiled in to reduce binary size. Hence we use
+    // Leptonica's orientation detection instead. See comments for
+    // `pixOrientDetect` in the Leptonica source for details of how it works.
+    //
+    // The method is simplistic, and is designed for latin text, but it serves
+    // as a baseline that can be improved upon later.
+    auto pix = tesseract_->GetThresholdedImage();
+
+    // Metric that indicates whether the image is right-side up vs upside down.
+    // +ve indicates right-side up.
+    float up_conf = 0;
+
+    // Metric that indicates whether the image is right-side up after being
+    // rotated 90 degrees clockwise.
+    float left_conf = 0;
+
+    auto had_error = pixOrientDetect(pix, &up_conf, &left_conf,
+                                     0 /* min_count */, 0 /* debug */);
+    pixDestroy(&pix);
+
+    if (had_error) {
+      // If there is an error, we currently fall back to reporting no rotation.
+      return 0;
+    }
+
+    // Are we more confident that the image is rotated at 0/180 degrees than
+    // 90/270?
+    auto is_up_or_down = abs(up_conf) - abs(left_conf) > 5.0;
+    int orientation;
+    if (is_up_or_down) {
+      if (up_conf > 0) {
+        orientation = 0;
+      } else {
+        orientation = 180;
+      }
+    } else {
+      if (left_conf < 0) {
+        orientation = 90;
+      } else {
+        orientation = 270;
+      }
+    }
+
+    return orientation;
+  }
+
  private:
   std::vector<TextRect> GetBoxes(TextUnit unit, bool with_text) {
     auto iter = unique_from_raw(tesseract_->GetIterator());
@@ -250,6 +298,7 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
       .function("loadModel", &OCREngine::LoadModel)
       .function("loadImage", &OCREngine::LoadImage)
       .function("getBoundingBoxes", &OCREngine::GetBoundingBoxes)
+      .function("getOrientation", &OCREngine::GetOrientation)
       .function("getTextBoxes", &OCREngine::GetTextBoxes)
       .function("getText", &OCREngine::GetText);
 
