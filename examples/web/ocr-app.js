@@ -87,7 +87,9 @@ function OCRWordBox({ box, imageWidth, imageHeight }) {
     >
       {hover && (
         <div className="OCRWordBox__content">
-          <div className="OCRWordBox__text">{box.text}</div>
+          <div className="OCRWordBox__text">
+            {box.text} ({box.confidence.toFixed(2)})
+          </div>
         </div>
       )}
     </div>
