@@ -66,6 +66,14 @@ export const layoutFlags = {
  */
 
 /**
+ * Result of orientation detection.
+ *
+ * @typedef Orientation
+ * @prop {number} rotation
+ * @prop {number} confidence - Confidence value in [0, 1]
+ */
+
+/**
  * @typedef {'line'|'word'} TextUnit
  */
 
@@ -244,9 +252,7 @@ class OCREngine {
   /**
    * Attempt to determine the orientation of the document image in degrees.
    *
-   * Returns 0, 90, 180 or 270.
-   *
-   * @return {number}
+   * @return {Orientation}
    */
   getOrientation() {
     this._checkImageLoaded();

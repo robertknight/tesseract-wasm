@@ -298,13 +298,14 @@ describe("OCREngine", () => {
   it("can determine image orientation", async () => {
     const imagePath = resolve("./small-test-page.jpg");
 
-    for (let orient of [0, 90, 180, 270]) {
-      const image = await sharp(imagePath).ensureAlpha().rotate(orient);
+    for (let rotation of [0, 90, 180, 270]) {
+      const image = await sharp(imagePath).ensureAlpha().rotate(rotation);
 
       ocr.loadImage(await toImageData(image));
       const estimatedOrient = ocr.getOrientation();
 
-      assert.equal(estimatedOrient, orient);
+      assert.equal(estimatedOrient.rotation, rotation);
+      assert.equal(estimatedOrient.confidence, 1);
     }
   });
 });

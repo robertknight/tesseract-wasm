@@ -29,6 +29,11 @@ struct TextRect {
   std::string text;
 };
 
+struct Orientation {
+  int rotation = 0;
+  float confidence = 0.0f;
+};
+
 enum class TextUnit {
   Word,
   Line,
@@ -176,7 +181,7 @@ class OCREngine {
     return string_from_raw(tesseract_->GetUTF8Text());
   }
 
-  int GetOrientation() {
+  Orientation GetOrientation() {
     // Tesseract's orientation detection is part of the legacy (non-LSTM)
     // engine, which is not compiled in to reduce binary size. Hence we use
     // Leptonica's orientation detection instead. See comments for
@@ -199,29 +204,29 @@ class OCREngine {
     pixDestroy(&pix);
 
     if (had_error) {
-      // If there is an error, we currently fall back to reporting no rotation.
-      return 0;
+      // If there is an error, we currently report a result with zero confidence
+      // score.
+      return {};
     }
 
     // Are we more confident that the image is rotated at 0/180 degrees than
     // 90/270?
     auto is_up_or_down = abs(up_conf) - abs(left_conf) > 5.0;
-    int orientation;
+    int rotation;
     if (is_up_or_down) {
       if (up_conf > 0) {
-        orientation = 0;
+        rotation = 0;
       } else {
-        orientation = 180;
+        rotation = 180;
       }
     } else {
       if (left_conf < 0) {
-        orientation = 90;
+        rotation = 90;
       } else {
-        orientation = 270;
+        rotation = 270;
       }
     }
-
-    return orientation;
+    return {.rotation = rotation, .confidence = 1};
   }
 
  private:
@@ -289,6 +294,10 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
       .field("flags", &TextRect::flags)
       .field("confidence", &TextRect::confidence)
       .field("text", &TextRect::text);
+
+  value_object<Orientation>("Orientation")
+      .field("rotation", &Orientation::rotation)
+      .field("confidence", &Orientation::confidence);
 
   class_<Image>("Image").constructor<int, int>().function("data", &Image::Data);
 

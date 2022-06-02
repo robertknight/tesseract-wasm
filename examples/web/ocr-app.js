@@ -96,6 +96,17 @@ function OCRWordBox({ box, imageWidth, imageHeight }) {
   );
 }
 
+function isNormalOrientation(orientation) {
+  return orientation.confidence > 0 && orientation.rotation === 0;
+}
+
+function formatOrientation(orientation) {
+  if (orientation.confidence === 0) {
+    return "Unknown";
+  }
+  return `${orientation.rotation}°`;
+}
+
 function OCRDemoApp() {
   const ocrClient = useRef(null);
   const [documentImage, setDocumentImage] = useState(null);
@@ -233,8 +244,8 @@ function OCRDemoApp() {
       {status !== null && <div>{status}…</div>}
       {ocrProgress !== null && <ProgressBar value={ocrProgress} />}
       {orientation !== null &&
-        orientation !== 0 &&
-        `Orientation: ${orientation}°`}
+        !isNormalOrientation(orientation) &&
+        `Orientation: ${formatOrientation(orientation)}`}
       {documentImage && (
         <div className="OCRDemoApp__output">
           <canvas

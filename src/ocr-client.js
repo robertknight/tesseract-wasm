@@ -10,6 +10,7 @@ import { imageDataFromBitmap } from "./utils";
 
 /**
  * @typedef {import('./ocr-engine').BoxItem} BoxItem
+ * @typedef {import('./ocr-engine').Orientation} Orientation
  * @typedef {import('./ocr-engine').TextItem} TextItem
  * @typedef {import('./ocr-engine').TextUnit} TextUnit
  */
@@ -203,6 +204,11 @@ export class OCRClient {
     }
   }
 
+  /**
+   * Attempt to determine the orientation of the image.
+   *
+   * @return {Promise<Orientation>}
+   */
   async getOrientation() {
     const engine = await this._ocrEngine;
     return engine.getOrientation();

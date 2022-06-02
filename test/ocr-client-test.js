@@ -114,7 +114,8 @@ describe("OCRClient", () => {
   it("can determine image orientation", async () => {
     const imageData = await loadImage(resolve("./small-test-page.jpg"));
     await ocr.loadImage(imageData);
-    const orientation = await ocr.getOrientation();
-    assert.equal(orientation, 0);
+    const orient = await ocr.getOrientation();
+    assert.equal(orient.rotation, 0);
+    assert.equal(orient.confidence, 1.0);
   });
 });
