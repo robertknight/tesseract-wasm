@@ -151,6 +151,10 @@ class OCREngine {
       throw new Error("Image width or height is zero");
     }
 
+    // Free up resources used by the previous image, if any. Doing this before
+    // creating the buffer for the new image reduces peak memory usage.
+    this._engine.clearImage();
+
     // Allocate a temporary internal image for transfering the image data into
     // Tesseract
     const engineImage = new this._tesseractLib.Image(
