@@ -1,6 +1,8 @@
 // @ts-ignore - Don't error if library hasn't been built yet.
 import initTesseractCore from "../build/tesseract-core";
 
+import { imageDataFromBitmap } from "./utils";
+
 /**
  * JS interface to a `std::vector` returned from a C++ method wrapped by
  * Embind.
@@ -10,18 +12,6 @@ import initTesseractCore from "../build/tesseract-core";
  * @prop {() => number} size
  * @prop {(index: number) => T} get
  */
-
-/**
- * @param {ImageBitmap} bitmap
- */
-function imageDataFromBitmap(bitmap) {
-  // @ts-expect-error - OffscreenCanvas API is missing
-  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-  /** @type {CanvasRenderingContext2D} */
-  const context = canvas.getContext("2d");
-  context.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height);
-  return context.getImageData(0, 0, bitmap.width, bitmap.height);
-}
 
 /**
  * Create a JS array from a std::vector wrapper created by Embind.
