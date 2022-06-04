@@ -6,6 +6,8 @@ import * as comlink from "comlink";
 // @ts-ignore
 import nodeEndpoint from "comlink/dist/esm/node-adapter.mjs";
 
+import { imageDataFromBitmap } from "./utils";
+
 /**
  * @typedef {import('./ocr-engine').BoxItem} BoxItem
  * @typedef {import('./ocr-engine').TextItem} TextItem
@@ -127,22 +129,14 @@ export class OCRClient {
    * @param {ImageBitmap|ImageData} image
    */
   async loadImage(image) {
-    // If the browser doesn't support OffscreenCanvas, we have to perform
-    // ImageBitmap => ImageData conversion on the main thread.
-    if (
-      typeof ImageBitmap !== "undefined" &&
-      image instanceof ImageBitmap &&
-      // @ts-expect-error - OffscreenCanvas is missing from TS types
-      typeof OffscreenCanvas === "undefined"
-    ) {
-      const canvas = document.createElement("canvas");
-      canvas.width = image.width;
-      canvas.height = image.height;
-      const context = /** @type {CanvasRenderingContext2D} */ (
-        canvas.getContext("2d")
-      );
-      context.drawImage(image, 0, 0, image.width, image.height);
-      image = context.getImageData(0, 0, image.width, image.height);
+    // Convert ImageBitmap to ImageData. In browsers that don't support
+    // OffscreenCanvas (Firefox and Safari as of 2022-06) we have to do this
+    // on the main thread using a canvas. In Chrome, we still do this on the
+    // main thread but using OffscreenCanvas, to work around an issue with
+    // rotation information being lost. See
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=1332947.
+    if (typeof ImageBitmap !== "undefined" && image instanceof ImageBitmap) {
+      image = imageDataFromBitmap(image);
     }
     const engine = await this._ocrEngine;
     return engine.loadImage(image);
