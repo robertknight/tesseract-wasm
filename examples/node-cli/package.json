@@ -13,6 +13,6 @@
     "commander": "^9.3.0",
     "node-fetch": "^3.2.4",
     "sharp": "^0.30.5",
-    "tesseract-wasm": "^0.3.0"
+    "tesseract-wasm": "^0.4.0"
   }
 }
