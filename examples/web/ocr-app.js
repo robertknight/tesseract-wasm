@@ -255,7 +255,18 @@ function OCRDemoApp() {
             ref={canvasRef}
           />
           {wordBoxes && (
-            <div className="OCRDemoApp__word-boxes">
+            <div
+              className="OCRDemoApp__word-boxes"
+              style={{
+                // The browser will implicitly set aspect-ratio for the <canvas>
+                // based on its `width` and `height` properties. For the word
+                // box layer we must provide it ourselves.
+                //
+                // This requires a modern browser (>= Sept 2021). In older browsers
+                // you could use JS or a padding hack (https://css-tricks.com/aspect-ratio-boxes/).
+                aspectRatio: `auto ${documentImage.width}/${documentImage.height}`,
+              }}
+            >
               {wordBoxes.map((box, index) => (
                 <OCRWordBox
                   key={index}
