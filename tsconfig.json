@@ -29,7 +29,7 @@
     /* Completeness */
     "skipLibCheck": true
   },
-  "include": ["src/**/*.js"],
+  "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": [
     // node-worker.js is currently excluded from checking because it relies
     // on the .d.ts files that only exist after the initial typecheck is complete.

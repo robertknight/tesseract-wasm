@@ -1,5 +1,7 @@
 import * as comlink from "comlink";
 
+import type { BoxItem, Orientation, TextItem, TextUnit } from "./ocr-engine";
+
 // Although this import is Node-specific, it is tiny and doesn't import any
 // Node libs, so can be included in a bundle that runs in non-Node environments.
 //
@@ -8,25 +10,34 @@ import nodeEndpoint from "comlink/dist/esm/node-adapter.mjs";
 
 import { imageDataFromBitmap } from "./utils";
 
-/**
- * @typedef {import('./ocr-engine').BoxItem} BoxItem
- * @typedef {import('./ocr-engine').Orientation} Orientation
- * @typedef {import('./ocr-engine').TextItem} TextItem
- * @typedef {import('./ocr-engine').TextUnit} TextUnit
- */
-
 function defaultWorkerURL() {
   return new URL("./tesseract-worker.js", import.meta.url).href;
 }
 
-/**
- * @param {string} url
- */
-function createWebWorker(url) {
+function createWebWorker(url: string) {
   return new Worker(url);
 }
 
-/** @typedef {(progress: number) => void} ProgressListener */
+type ProgressListener = (progress: number) => void;
+
+export type OCRClientInit = {
+  /**
+   * Callback that creates the worker. The default implementation creates a Web Worker.
+   */
+  createWorker?: (url: string) => Worker;
+
+  /**
+   * WebAssembly binary to load in worker. If not set, it is loaded from the
+   * default location relative to the current script.
+   */
+  wasmBinary?: Uint8Array | ArrayBuffer;
+
+  /**
+   * Location of worker script/module. If not set, it is loaded from the default location relative to the
+   * current script.
+   */
+  workerURL?: string;
+};
 
 /**
  * High-level async API for performing document image layout analysis and
@@ -36,27 +47,23 @@ function createWebWorker(url) {
  * `createOCRClient` helper from `node-worker.js`.
  */
 export class OCRClient {
+  private _worker: Worker;
+  private _progressListeners: ProgressListener[];
+  private _progressChannel: MessagePort;
+  private _ocrEngine: any;
+
   /**
    * Initialize an OCR engine.
    *
    * This will start a Worker in which the OCR operations will actually be
    * performed.
    *
-   * @param {object} options
-   *   @param {(url: string) => Worker} [options.createWorker] - Callback that
-   *     creates the worker. The default implementation creates a Web Worker.
-   *   @param {Uint8Array|ArrayBuffer} [options.wasmBinary] - WebAssembly binary
-   *     to load in worker. If not set, it is loaded from the default location
-   *     relative to the current script.
-   *   @param {string} [options.workerURL] - Location of worker script/module.
-   *     If not set, it is loaded from the default location relative to the
-   *     current script.
    */
   constructor({
     createWorker = createWebWorker,
     wasmBinary,
     workerURL = defaultWorkerURL(),
-  } = {}) {
+  }: OCRClientInit = {}) {
     const worker = createWorker(workerURL);
     this._worker = worker;
 
@@ -96,7 +103,7 @@ export class OCRClient {
       }
     };
 
-    this._ocrEngine = remote.createOCREngine(
+    this._ocrEngine = (remote as any).createOCREngine(
       {
         wasmBinary,
       },
@@ -112,10 +119,8 @@ export class OCRClient {
   /**
    * Load a trained model for a specific language. This can be specified either
    * as a URL to fetch or a buffer containing an already-loaded model.
-   *
-   * @param {string|ArrayBuffer} model
    */
-  async loadModel(model) {
+  async loadModel(model: string | ArrayBuffer): Promise<void> {
     const engine = await this._ocrEngine;
     if (typeof model === "string") {
       const response = await fetch(model);
@@ -126,10 +131,8 @@ export class OCRClient {
 
   /**
    * Load an image into the OCR engine for processing.
-   *
-   * @param {ImageBitmap|ImageData} image
    */
-  async loadImage(image) {
+  async loadImage(image: ImageBitmap | ImageData): Promise<void> {
     // Convert ImageBitmap to ImageData. In browsers that don't support
     // OffscreenCanvas (Firefox and Safari as of 2022-06) we have to do this
     // on the main thread using a canvas. In Chrome, we still do this on the
@@ -150,11 +153,8 @@ export class OCRClient {
    * This operation is relatively cheap compared to text recognition, so can
    * provide much faster results if only the location of lines/words etc. on
    * the page is required, not the text content.
-   *
-   * @param {TextUnit} unit
-   * @return {Promise<BoxItem[]>}
    */
-  async getBoundingBoxes(unit) {
+  async getBoundingBoxes(unit: TextUnit): Promise<BoxItem[]> {
     const engine = await this._ocrEngine;
     return engine.getBoundingBoxes(unit);
   }
@@ -163,12 +163,11 @@ export class OCRClient {
    * Perform layout analysis and text recognition on the current image, if
    * not already done, and return bounding boxes and text content for a given
    * unit of text.
-   *
-   * @param {TextUnit} unit
-   * @param {ProgressListener} [onProgress]
-   * @return {Promise<TextItem[]>}
    */
-  async getTextBoxes(unit, onProgress) {
+  async getTextBoxes(
+    unit: TextUnit,
+    onProgress?: ProgressListener
+  ): Promise<TextItem[]> {
     const engine = await this._ocrEngine;
 
     if (onProgress) {
@@ -186,11 +185,8 @@ export class OCRClient {
   /**
    * Perform layout analysis and text recognition on the current image, if
    * not already done, and return the image's text as a string.
-   *
-   * @param {ProgressListener} [onProgress]
-   * @return {Promise<string>}
    */
-  async getText(onProgress) {
+  async getText(onProgress?: ProgressListener): Promise<string> {
     const engine = await this._ocrEngine;
     if (onProgress) {
       this._addProgressListener(onProgress);
@@ -212,21 +208,17 @@ export class OCRClient {
    * if the text is all uppercase.
    *
    * [1] See http://www.leptonica.org/papers/skew-measurement.pdf
-   *
-   * @return {Promise<Orientation>}
    */
-  async getOrientation() {
+  async getOrientation(): Promise<Orientation> {
     const engine = await this._ocrEngine;
     return engine.getOrientation();
   }
 
-  /** @param {ProgressListener} listener */
-  _addProgressListener(listener) {
+  _addProgressListener(listener: ProgressListener) {
     this._progressListeners.push(listener);
   }
 
-  /** @param {ProgressListener} listener */
-  _removeProgressListener(listener) {
+  _removeProgressListener(listener: ProgressListener) {
     this._progressListeners = this._progressListeners.filter(
       (l) => l !== listener
     );

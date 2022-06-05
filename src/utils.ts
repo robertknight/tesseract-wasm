@@ -1,8 +1,7 @@
 /**
- * @param {ImageBitmap} bitmap
- * @return {ImageData}
+ * Extract the pixel data from an ImageBitmap.
  */
-export function imageDataFromBitmap(bitmap) {
+export function imageDataFromBitmap(bitmap: ImageBitmap): ImageData {
   /** @type {HTMLCanvasElement} */
   let canvas;
   // @ts-expect-error - OffscreenCanvas API is missing
@@ -18,9 +17,8 @@ export function imageDataFromBitmap(bitmap) {
     throw new Error("No canvas implementation available");
   }
 
-  const context = /** @type {CanvasRenderingContext2D} */ (
-    canvas.getContext("2d")
-  );
+  const context =
+    /** @type {CanvasRenderingContext2D} */ canvas.getContext("2d");
   context.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height);
   return context.getImageData(0, 0, bitmap.width, bitmap.height);
 }

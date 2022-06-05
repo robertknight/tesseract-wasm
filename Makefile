@@ -26,6 +26,7 @@ build:
 format:
 	clang-format -i --style=google src/*.cpp
 	node_modules/.bin/prettier -w {examples,src,test}/**/*.js
+	node_modules/.bin/prettier -w src/**/*.ts
 
 .PHONY: checkformat
 checkformat:
@@ -185,5 +186,5 @@ dist/tesseract-core-fallback.wasm: build/tesseract-core-fallback.wasm
 	mkdir -p dist/
 	cp $< $@
 
-dist/lib.js dist/tesseract-worker.js: src/*.js build/tesseract-core.js build/tesseract-core.wasm build/tesseract-core-fallback.wasm
+dist/lib.js dist/tesseract-worker.js: src/*.ts build/tesseract-core.js build/tesseract-core.wasm build/tesseract-core-fallback.wasm
 	node_modules/.bin/rollup -c rollup.config.js
