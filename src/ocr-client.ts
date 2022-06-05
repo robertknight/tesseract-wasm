@@ -67,8 +67,7 @@ export class OCRClient {
     const worker = createWorker(workerURL);
     this._worker = worker;
 
-    /** @type {ProgressListener[]} progress */
-    this._progressListeners = [];
+    this._progressListeners = [] as ProgressListener[];
 
     const endpoint =
       "addEventListener" in worker ? worker : nodeEndpoint(worker);
