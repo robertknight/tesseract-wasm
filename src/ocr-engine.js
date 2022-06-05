@@ -252,6 +252,12 @@ class OCREngine {
   /**
    * Attempt to determine the orientation of the document image in degrees.
    *
+   * This currently uses a simplistic algorithm [1] which is designed for
+   * non-uppercase Latin text. It will likely perform badly for other scripts or
+   * if the text is all uppercase.
+   *
+   * [1] See http://www.leptonica.org/papers/skew-measurement.pdf
+   *
    * @return {Orientation}
    */
   getOrientation() {
