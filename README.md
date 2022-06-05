@@ -89,14 +89,13 @@ async function runOCR() {
 runOCR();
 ```
 
-## Examples
+## Examples and documentation
 
 See the `examples/` directory for projects that show usage of the library in
 the browser and Node.
 
-## Documentation
-
-See JSDoc comments in the source files in `src/` for API documentation.
+See the [API documentation](https://robertknight.github.io/tesseract-wasm/api/)
+for detailed usage information.
 
 See the Tesseract [User Manual](https://tesseract-ocr.github.io/tessdoc/) for
 information on how Tesseract works, as well as advice on [improving
