@@ -32,12 +32,17 @@ checkformat:
 	clang-format -Werror --dry-run --style=google src/*.cpp
 	node_modules/.bin/prettier --check {examples,src,test}/**/*.js
 
+
+.PHONY: typecheck
+typecheck:
+	node_modules/.bin/tsc
+
 .PHONY: test
 test: third_party/tessdata_fast
 	node_modules/.bin/mocha
 
 .PHONY: release
-release: clean lib test
+release: clean lib typecheck test
 	@which np || (echo "Install np from https://github.com/sindresorhus/np" && false)
 	np minor
 
