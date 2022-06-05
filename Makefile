@@ -36,6 +36,11 @@ checkformat:
 test: third_party/tessdata_fast
 	node_modules/.bin/mocha
 
+.PHONY: release
+release: clean lib test
+	@which np || (echo "Install np from https://github.com/sindresorhus/np" && false)
+	np minor
+
 .PHONY: gh-pages
 gh-pages:
 	cd examples/web && npm install && npm run build
