@@ -38,6 +38,10 @@ checkformat:
 typecheck:
 	node_modules/.bin/tsc
 
+.PHONY: api-docs
+api-docs:
+	node_modules/.bin/typedoc --excludePrivate --out docs/api/ src/index.ts
+
 .PHONY: test
 test: third_party/tessdata_fast
 	node_modules/.bin/mocha

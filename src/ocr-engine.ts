@@ -81,14 +81,14 @@ export type TextUnit = "line" | "word";
 /**
  * Handler that receives OCR operation progress updates.
  */
-export type ProgressHandler = (progress: number) => void;
+export type ProgressListener = (progress: number) => void;
 
 /**
  * Low-level synchronous API for performing OCR.
  *
  * Instances are constructed using {@link createOCREngine}.
  */
-class OCREngine {
+export class OCREngine {
   private _tesseractLib: any;
   private _engine: any;
   private _modelLoaded: boolean;
@@ -96,6 +96,10 @@ class OCREngine {
   private _progressChannel?: MessagePort;
 
   /**
+   * Initialize the OCREngine.
+   *
+   * Use {@link createOCREngine} rather than calling this directly.
+   *
    * @param tessLib - Emscripten entry point for the compiled WebAssembly module.
    * @param progressChannel - Channel used to report progress
    *   updates when OCREngine is run on a background thread
@@ -204,7 +208,7 @@ class OCREngine {
    * A text recognition model must be loaded with {@link loadModel} before this
    * is called.
    */
-  getTextBoxes(unit: TextUnit, onProgress?: ProgressHandler): TextItem[] {
+  getTextBoxes(unit: TextUnit, onProgress?: ProgressListener): TextItem[] {
     this._checkImageLoaded();
     this._checkModelLoaded();
 
@@ -225,7 +229,7 @@ class OCREngine {
    * A text recognition model must be loaded with {@link loadModel} before this
    * is called.
    */
-  getText(onProgress?: ProgressHandler): string {
+  getText(onProgress?: ProgressListener): string {
     this._checkImageLoaded();
     this._checkModelLoaded();
     return this._engine.getText((progress: number) => {
@@ -248,19 +252,19 @@ class OCREngine {
     return this._engine.getOrientation();
   }
 
-  _checkModelLoaded() {
+  private _checkModelLoaded() {
     if (!this._modelLoaded) {
       throw new Error("No text recognition model loaded");
     }
   }
 
-  _checkImageLoaded() {
+  private _checkImageLoaded() {
     if (!this._imageLoaded) {
       throw new Error("No image loaded");
     }
   }
 
-  _textUnitForUnit(unit: TextUnit) {
+  private _textUnitForUnit(unit: TextUnit) {
     const { TextUnit } = this._tesseractLib;
     switch (unit) {
       case "word":

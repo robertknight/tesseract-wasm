@@ -1,6 +1,12 @@
 import * as comlink from "comlink";
 
-import type { BoxItem, Orientation, TextItem, TextUnit } from "./ocr-engine";
+import type {
+  BoxItem,
+  Orientation,
+  ProgressListener,
+  TextItem,
+  TextUnit,
+} from "./ocr-engine";
 
 // Although this import is Node-specific, it is tiny and doesn't import any
 // Node libs, so can be included in a bundle that runs in non-Node environments.
@@ -17,8 +23,6 @@ function defaultWorkerURL() {
 function createWebWorker(url: string) {
   return new Worker(url);
 }
-
-type ProgressListener = (progress: number) => void;
 
 export type OCRClientInit = {
   /**
@@ -213,11 +217,11 @@ export class OCRClient {
     return engine.getOrientation();
   }
 
-  _addProgressListener(listener: ProgressListener) {
+  private _addProgressListener(listener: ProgressListener) {
     this._progressListeners.push(listener);
   }
 
-  _removeProgressListener(listener: ProgressListener) {
+  private _removeProgressListener(listener: ProgressListener) {
     this._progressListeners = this._progressListeners.filter(
       (l) => l !== listener
     );
