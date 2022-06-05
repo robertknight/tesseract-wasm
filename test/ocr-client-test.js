@@ -108,4 +108,14 @@ describe("OCRClient", () => {
       }
     }
   });
+
+  // Test orientation detection method returns a result. Detailed tests for
+  // different orientations are handled in the OCREngine tests.
+  it("can determine image orientation", async () => {
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
+    await ocr.loadImage(imageData);
+    const orient = await ocr.getOrientation();
+    assert.equal(orient.rotation, 0);
+    assert.equal(orient.confidence, 1.0);
+  });
 });

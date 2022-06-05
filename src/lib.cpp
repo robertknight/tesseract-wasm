@@ -29,6 +29,11 @@ struct TextRect {
   std::string text;
 };
 
+struct Orientation {
+  int rotation = 0;
+  float confidence = 0.0f;
+};
+
 enum class TextUnit {
   Word,
   Line,
@@ -176,6 +181,54 @@ class OCREngine {
     return string_from_raw(tesseract_->GetUTF8Text());
   }
 
+  Orientation GetOrientation() {
+    // Tesseract's orientation detection is part of the legacy (non-LSTM)
+    // engine, which is not compiled in to reduce binary size. Hence we use
+    // Leptonica's orientation detection instead. See comments for
+    // `pixOrientDetect` in the Leptonica source for details of how it works.
+    //
+    // The method is simplistic, and is designed for latin text, but it serves
+    // as a baseline that can be improved upon later.
+    auto pix = tesseract_->GetThresholdedImage();
+
+    // Metric that indicates whether the image is right-side up vs upside down.
+    // +ve indicates right-side up.
+    float up_conf = 0;
+
+    // Metric that indicates whether the image is right-side up after being
+    // rotated 90 degrees clockwise.
+    float left_conf = 0;
+
+    auto had_error = pixOrientDetect(pix, &up_conf, &left_conf,
+                                     0 /* min_count */, 0 /* debug */);
+    pixDestroy(&pix);
+
+    if (had_error) {
+      // If there is an error, we currently report a result with zero confidence
+      // score.
+      return {};
+    }
+
+    // Are we more confident that the image is rotated at 0/180 degrees than
+    // 90/270?
+    auto is_up_or_down = abs(up_conf) - abs(left_conf) > 5.0;
+    int rotation;
+    if (is_up_or_down) {
+      if (up_conf > 0) {
+        rotation = 0;
+      } else {
+        rotation = 180;
+      }
+    } else {
+      if (left_conf < 0) {
+        rotation = 90;
+      } else {
+        rotation = 270;
+      }
+    }
+    return {.rotation = rotation, .confidence = 1};
+  }
+
  private:
   std::vector<TextRect> GetBoxes(TextUnit unit, bool with_text) {
     auto iter = unique_from_raw(tesseract_->GetIterator());
@@ -242,6 +295,10 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
       .field("confidence", &TextRect::confidence)
       .field("text", &TextRect::text);
 
+  value_object<Orientation>("Orientation")
+      .field("rotation", &Orientation::rotation)
+      .field("confidence", &Orientation::confidence);
+
   class_<Image>("Image").constructor<int, int>().function("data", &Image::Data);
 
   class_<OCREngine>("OCREngine")
@@ -250,6 +307,7 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
       .function("loadModel", &OCREngine::LoadModel)
       .function("loadImage", &OCREngine::LoadImage)
       .function("getBoundingBoxes", &OCREngine::GetBoundingBoxes)
+      .function("getOrientation", &OCREngine::GetOrientation)
       .function("getTextBoxes", &OCREngine::GetTextBoxes)
       .function("getText", &OCREngine::GetText);
 

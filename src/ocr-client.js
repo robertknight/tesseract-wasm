@@ -10,6 +10,7 @@ import { imageDataFromBitmap } from "./utils";
 
 /**
  * @typedef {import('./ocr-engine').BoxItem} BoxItem
+ * @typedef {import('./ocr-engine').Orientation} Orientation
  * @typedef {import('./ocr-engine').TextItem} TextItem
  * @typedef {import('./ocr-engine').TextUnit} TextUnit
  */
@@ -201,6 +202,22 @@ export class OCRClient {
         this._removeProgressListener(onProgress);
       }
     }
+  }
+
+  /**
+   * Attempt to determine the orientation of the image.
+   *
+   * This currently uses a simplistic algorithm [1] which is designed for
+   * non-uppercase Latin text. It will likely perform badly for other scripts or
+   * if the text is all uppercase.
+   *
+   * [1] See http://www.leptonica.org/papers/skew-measurement.pdf
+   *
+   * @return {Promise<Orientation>}
+   */
+  async getOrientation() {
+    const engine = await this._ocrEngine;
+    return engine.getOrientation();
   }
 
   /** @param {ProgressListener} listener */

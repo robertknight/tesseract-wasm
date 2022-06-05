@@ -66,6 +66,14 @@ export const layoutFlags = {
  */
 
 /**
+ * Result of orientation detection.
+ *
+ * @typedef Orientation
+ * @prop {number} rotation
+ * @prop {number} confidence - Confidence value in [0, 1]
+ */
+
+/**
  * @typedef {'line'|'word'} TextUnit
  */
 
@@ -239,6 +247,22 @@ class OCREngine {
         this._progressChannel?.postMessage({ progress });
       }
     );
+  }
+
+  /**
+   * Attempt to determine the orientation of the document image in degrees.
+   *
+   * This currently uses a simplistic algorithm [1] which is designed for
+   * non-uppercase Latin text. It will likely perform badly for other scripts or
+   * if the text is all uppercase.
+   *
+   * [1] See http://www.leptonica.org/papers/skew-measurement.pdf
+   *
+   * @return {Orientation}
+   */
+  getOrientation() {
+    this._checkImageLoaded();
+    return this._engine.getOrientation();
   }
 
   _checkModelLoaded() {
