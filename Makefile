@@ -43,11 +43,7 @@ release: clean lib test
 
 .PHONY: gh-pages
 gh-pages:
-	cd examples/web && npm install && npm run build
-	rm -rf docs/
-	mkdir -p docs/
-	cp -R examples/web/index.html examples/web/ocr-app.css examples/web/build docs/
-	cp $(wildcard examples/web/node_modules/tesseract-wasm/dist/tesseract-*) docs/build/
+	./update-gh-pages.sh
 
 EMSDK_COMMIT=93f21c9ef30bab52de24f9d4ea3f2f377cf6326a
 third_party/emsdk:
