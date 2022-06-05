@@ -6,21 +6,16 @@ import { imageDataFromBitmap } from "./utils";
 /**
  * JS interface to a `std::vector` returned from a C++ method wrapped by
  * Embind.
- *
- * @template T
- * @typedef StdVector
- * @prop {() => number} size
- * @prop {(index: number) => T} get
  */
+type StdVector<T> = {
+  size: () => number;
+  get: (index: number) => T;
+};
 
 /**
  * Create a JS array from a std::vector wrapper created by Embind.
- *
- * @template T
- * @param {StdVector<T>} vec
- * @return {T[]}
  */
-function jsArrayFromStdVector(vec) {
+function jsArrayFromStdVector<T>(vec: StdVector<T>): T[] {
   const size = vec.size();
   const result = [];
   for (let i = 0; i < size; i++) {
@@ -39,49 +34,54 @@ export const layoutFlags = {
   EndOfLine: 2,
 };
 
-/**
- * @typedef IntRect
- * @prop {number} left
- * @prop {number} top
- * @prop {number} right
- * @prop {number} bottom
- */
+export type IntRect = {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+};
 
 /**
  * Item of text found in a document image by layout analysis.
- *
- * @typedef BoxItem
- * @prop {IntRect} rect
- * @prop {number} flags - Combination of flags from {@link layoutFlags}
  */
+export type BoxItem = {
+  rect: IntRect;
+
+  /** Combination of flags from {@link layoutFlags} */
+  flags: number;
+};
 
 /**
  * Item of text found in a document image by layout analysis and OCR.
- *
- * @typedef TextItem
- * @prop {IntRect} rect
- * @prop {number} flags - Combination of flags from {@link layoutFlags}
- * @prop {number} confidence - Confidence score for this word in [0, 1]
- * @prop {string} text
  */
+export type TextItem = {
+  rect: IntRect;
+
+  /** Combination of flags from {@link layoutFlags} */
+  flags: number;
+
+  /** Confidence score for this word in [0, 1] */
+  confidence: number;
+
+  text: string;
+};
 
 /**
  * Result of orientation detection.
- *
- * @typedef Orientation
- * @prop {number} rotation
- * @prop {number} confidence - Confidence value in [0, 1]
  */
+export type Orientation = {
+  rotation: number;
 
-/**
- * @typedef {'line'|'word'} TextUnit
- */
+  /** Confidence value in [0, 1] */
+  confidence: number;
+};
+
+export type TextUnit = "line" | "word";
 
 /**
  * Handler that receives OCR operation progress updates.
- *
- * @typedef {((progress: number) => void)} ProgressHandler
  */
+export type ProgressHandler = (progress: number) => void;
 
 /**
  * Low-level synchronous API for performing OCR.
@@ -89,12 +89,18 @@ export const layoutFlags = {
  * Instances are constructed using {@link createOCREngine}.
  */
 class OCREngine {
+  private _tesseractLib: any;
+  private _engine: any;
+  private _modelLoaded: boolean;
+  private _imageLoaded: boolean;
+  private _progressChannel?: MessagePort;
+
   /**
-   * @param {any} tessLib - Emscripten entry point for the compiled WebAssembly module.
-   * @param {MessagePort} [progressChannel] - Channel used to report progress
+   * @param tessLib - Emscripten entry point for the compiled WebAssembly module.
+   * @param progressChannel - Channel used to report progress
    *   updates when OCREngine is run on a background thread
    */
-  constructor(tessLib, progressChannel) {
+  constructor(tessLib: any, progressChannel?: MessagePort) {
     this._tesseractLib = tessLib;
     this._engine = new tessLib.OCREngine();
     this._modelLoaded = false;
@@ -112,10 +118,8 @@ class OCREngine {
 
   /**
    * Load a trained text recognition model.
-   *
-   * @param {Uint8Array|ArrayBuffer} model
    */
-  loadModel(model) {
+  loadModel(model: Uint8Array | ArrayBuffer) {
     const modelArray =
       model instanceof ArrayBuffer ? new Uint8Array(model) : model;
     const result = this._engine.loadModel(modelArray);
@@ -130,15 +134,13 @@ class OCREngine {
    *
    * This is a cheap operation as expensive processing is deferred until
    * bounding boxes or text content is requested.
-   *
-   * @param {ImageBitmap|ImageData} image
    */
-  loadImage(image) {
+  loadImage(image: ImageBitmap | ImageData) {
     let imageData;
     if (typeof ImageBitmap !== "undefined" && image instanceof ImageBitmap) {
       imageData = imageDataFromBitmap(image);
     } else {
-      imageData = /** @type {ImageData} */ (image);
+      imageData = image as ImageData;
     }
 
     if (imageData.data.length < imageData.width * imageData.height * 4) {
@@ -187,11 +189,8 @@ class OCREngine {
    * compared to {@link getTextBoxes} due to the simpler analysis. After full
    * OCR has been performed by {@link getTextBoxes} or {@link getText}, this
    * method should return the same results.
-   *
-   * @param {TextUnit} unit
-   * @return {BoxItem[]}
    */
-  getBoundingBoxes(unit) {
+  getBoundingBoxes(unit: TextUnit): BoxItem[] {
     this._checkImageLoaded();
     const textUnit = this._textUnitForUnit(unit);
     return jsArrayFromStdVector(this._engine.getBoundingBoxes(textUnit));
@@ -204,26 +203,18 @@ class OCREngine {
    *
    * A text recognition model must be loaded with {@link loadModel} before this
    * is called.
-   *
-   * @param {TextUnit} unit
-   * @param {ProgressHandler} [onProgress]
-   * @return {TextItem[]}
    */
-  getTextBoxes(unit, onProgress) {
+  getTextBoxes(unit: TextUnit, onProgress?: ProgressHandler): TextItem[] {
     this._checkImageLoaded();
     this._checkModelLoaded();
 
     const textUnit = this._textUnitForUnit(unit);
 
     return jsArrayFromStdVector(
-      this._engine.getTextBoxes(
-        textUnit,
-        /** @param {number} progress */
-        (progress) => {
-          onProgress?.(progress);
-          this._progressChannel?.postMessage({ progress });
-        }
-      )
+      this._engine.getTextBoxes(textUnit, (progress: number) => {
+        onProgress?.(progress);
+        this._progressChannel?.postMessage({ progress });
+      })
     );
   }
 
@@ -233,20 +224,14 @@ class OCREngine {
    *
    * A text recognition model must be loaded with {@link loadModel} before this
    * is called.
-   *
-   * @param {ProgressHandler} [onProgress]
-   * @return {string}
    */
-  getText(onProgress) {
+  getText(onProgress?: ProgressHandler): string {
     this._checkImageLoaded();
     this._checkModelLoaded();
-    return this._engine.getText(
-      /** @param {number} progress */
-      (progress) => {
-        onProgress?.(progress);
-        this._progressChannel?.postMessage({ progress });
-      }
-    );
+    return this._engine.getText((progress: number) => {
+      onProgress?.(progress);
+      this._progressChannel?.postMessage({ progress });
+    });
   }
 
   /**
@@ -257,10 +242,8 @@ class OCREngine {
    * if the text is all uppercase.
    *
    * [1] See http://www.leptonica.org/papers/skew-measurement.pdf
-   *
-   * @return {Orientation}
    */
-  getOrientation() {
+  getOrientation(): Orientation {
     this._checkImageLoaded();
     return this._engine.getOrientation();
   }
@@ -277,8 +260,7 @@ class OCREngine {
     }
   }
 
-  /** @param {TextUnit} unit */
-  _textUnitForUnit(unit) {
+  _textUnitForUnit(unit: TextUnit) {
     const { TextUnit } = this._tesseractLib;
     switch (unit) {
       case "word":
@@ -308,11 +290,7 @@ function wasmSIMDSupported() {
   return WebAssembly.validate(simdTest);
 }
 
-/**
- * @param {string} path
- * @param {string} baseURL
- */
-function resolve(path, baseURL) {
+function resolve(path: string, baseURL: string) {
   return new URL(path, baseURL).href;
 }
 
@@ -325,17 +303,23 @@ export function supportsFastBuild() {
   return wasmSIMDSupported();
 }
 
+export type CreateOCREngineOptions = {
+  /**
+   * WebAssembly binary to load. This can be used to customize how the binary URL
+   * is determined and fetched. {@link supportsFastBuild} can be used to
+   * determine which build to load.
+   */
+  wasmBinary?: Uint8Array | ArrayBuffer;
+  progressChannel?: MessagePort;
+};
+
 /**
  * Initialize the OCR library and return a new {@link OCREngine}.
- *
- * @param {object} options
- *   @param {Uint8Array|ArrayBuffer} [options.wasmBinary] - WebAssembly binary
- *     to load. This can be used to customize how the binary URL is determined
- *     and fetched. {@link supportsFastBuild} can be used to determine which
- *     build to load.
- *   @param {MessagePort} [options.progressChannel]
  */
-export async function createOCREngine({ wasmBinary, progressChannel } = {}) {
+export async function createOCREngine({
+  wasmBinary,
+  progressChannel,
+}: CreateOCREngineOptions = {}) {
   if (!wasmBinary) {
     const wasmPath = supportsFastBuild()
       ? "./tesseract-core.wasm"

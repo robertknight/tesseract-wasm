@@ -1,9 +1,10 @@
 import nodeResolve from "@rollup/plugin-node-resolve";
 import commonJS from "@rollup/plugin-commonjs";
+import typescript from "@rollup/plugin-typescript";
 
 export default [
   {
-    input: "src/worker.js",
+    input: "src/worker.ts",
     output: {
       dir: "dist",
       entryFileNames: "tesseract-worker.js",
@@ -13,18 +14,20 @@ export default [
       format: "umd",
     },
     plugins: [
+      typescript(),
       nodeResolve(),
       commonJS(),
     ],
   },
   {
-    input: "src/index.js",
+    input: "src/index.ts",
     output: {
       dir: "dist",
       entryFileNames: "lib.js",
       format: "esm",
     },
     plugins: [
+      typescript(),
       nodeResolve(),
       commonJS(),
     ],
