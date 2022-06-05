@@ -21,6 +21,9 @@ mkdir -p docs/
 cp -R examples/web/index.html examples/web/ocr-app.css examples/web/build docs/
 cp examples/web/node_modules/tesseract-wasm/dist/tesseract-* docs/build/
 
+# Build API docs
+make api-docs
+
 # Commit updated build.
 git add docs
 git commit -m "Update GitHub Pages"
