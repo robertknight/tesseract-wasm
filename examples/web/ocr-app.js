@@ -116,6 +116,7 @@ function OCRDemoApp() {
   const [status, setStatus] = useState(null);
   const [wordBoxes, setWordBoxes] = useState([]);
   const [orientation, setOrientation] = useState(null);
+  const [ocrTime, setOCRTime] = useState(null);
 
   const canvasRef = useRef(null);
 
@@ -127,6 +128,7 @@ function OCRDemoApp() {
     setError(null);
     setWordBoxes(null);
     setOrientation(null);
+    setOCRTime(null);
 
     // Set progress to `0` rather than `null` here to show the progress bar
     // immediately after an image is selected.
@@ -150,6 +152,7 @@ function OCRDemoApp() {
         );
       }
       const ocr = ocrClient.current;
+      const startTime = performance.now();
 
       try {
         setStatus("Loading image");
@@ -163,6 +166,9 @@ function OCRDemoApp() {
         let boxes = await ocr.getTextBoxes("word", setOCRProgress);
         boxes = boxes.filter((box) => box.text.trim() !== "");
         setWordBoxes(boxes);
+
+        const endTime = performance.now();
+        setOCRTime(Math.round(endTime - startTime));
 
         // Get the text as a single string. This will be quick since OCR has
         // already been performed.
@@ -230,6 +236,11 @@ function OCRDemoApp() {
       )}
       <FileDropZone onDrop={loadImage} />
       {status !== null && <div>{status}…</div>}
+      {ocrTime !== null && (
+        <div>
+          Found {wordBoxes.length} words in {ocrTime}ms
+        </div>
+      )}
       {ocrProgress !== null && <ProgressBar value={ocrProgress} />}
       {orientation !== null &&
         !isNormalOrientation(orientation) &&
