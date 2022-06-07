@@ -139,19 +139,7 @@ function OCRDemoApp() {
       if (!ocrClient.current) {
         // Initialize the OCR engine when recognition is performed for the first
         // time.
-        const isGitHubPages = location.hostname.endsWith(".github.io");
-        const options = {};
-        if (!isGitHubPages) {
-          // In a production application, you would serve the tesseract-worker.js
-          // and .wasm files from node_modules/tesseract-wasm/dist/ alongside
-          // your JS bundle, and setting `workerURL` would not be required.
-          //
-          // Note that the worker must be served from the same origin as your
-          // application.
-          options.workerURL =
-            "node_modules/tesseract-wasm/dist/tesseract-worker.js";
-        }
-        ocrClient.current = new OCRClient(options);
+        ocrClient.current = new OCRClient();
 
         // Fetch OCR model. In production you would probably want to serve this
         // yourself and ensure that the model is well compressed (eg.  using
