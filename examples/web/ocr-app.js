@@ -143,9 +143,9 @@ function OCRDemoApp() {
         // time.
         ocrClient.current = new OCRClient();
 
-        // Fetch OCR model. In production you would probably want to serve this
-        // yourself and ensure that the model is well compressed (eg.  using
-        // Brotli) to reduce the download size and cached for a long time.
+        // Fetch OCR model. This demo fetches the model directly from GitHub,
+        // but in production you should serve it yourself and make sure HTTP
+        // compression and caching are applied to reduce loading time.
         setStatus("Fetching text recognition model");
         await ocrClient.current.loadModel(
           "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/eng.traineddata"
