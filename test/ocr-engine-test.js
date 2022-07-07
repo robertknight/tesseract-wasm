@@ -1,4 +1,3 @@
-import { dirname } from "node:path";
 import { readFile } from "node:fs/promises";
 
 import { assert } from "chai";
