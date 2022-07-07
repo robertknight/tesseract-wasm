@@ -270,7 +270,7 @@ describe("OCREngine", () => {
     ocr.loadImage(imageData);
 
     const progressSteps = [];
-    const text = ocr.getText((progress) => {
+    ocr.getText((progress) => {
       progressSteps.push(progress);
     });
 
