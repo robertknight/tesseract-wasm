@@ -122,9 +122,7 @@ TESSERACT_FALLBACK_FLAGS=$(TESSERACT_FLAGS) \
 	-DCMAKE_INSTALL_PREFIX=$(FALLBACK_INSTALL_DIR) \
   -DCMAKE_CXX_FLAGS=$(TESSERACT_DEFINES)
 
-# Tesseract commit is v5.1.0 plus additional fixes needed to compile against
-# the pinned Leptonica version.
-TESSERACT_COMMIT=f36c0d019be59cae3b96da0d89d870dbe83e9714
+TESSERACT_COMMIT=5.2.0
 third_party/tesseract:
 	mkdir -p third_party/tesseract
 	git clone --depth 1 https://github.com/tesseract-ocr/tesseract.git $@
