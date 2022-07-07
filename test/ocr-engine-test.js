@@ -114,6 +114,29 @@ describe("OCREngine", () => {
     }, "No text recognition model loaded");
   });
 
+  it("throws an error if you attempt get the value of a nonsense variable", async () => {
+    const ocr = await createEngine({ loadModel: false });
+    assert.throws(() => {
+      ocr.getVariable("nonsense");
+    }, "Unable to get variable nonsense");
+  });
+
+  it("throws an error if you attempt set the value of a nonsense variable", async () => {
+    const ocr = await createEngine({ loadModel: false });
+    assert.throws(() => {
+      ocr.setVariable("nonsense", "nonsense");
+    }, "Unable to set variable nonsense");
+  });
+
+  it("successfully sets configuration variables", async () => {
+    const ocr = await createEngine({ loadModel: false });
+    const varName = "user_defined_dpi";
+    const varValue = "300";
+    ocr.setVariable(varName, varValue);
+    const dpi = ocr.getVariable(varName);
+    assert.equal(dpi, varValue);
+  })
+
   it("extracts bounding boxes from image", async function () {
     this.timeout(2_000);
 

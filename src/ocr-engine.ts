@@ -121,6 +121,33 @@ export class OCREngine {
   }
 
   /**
+   * Get the value, represented as a string, of a Tesseract configuration variable.
+   *
+   * For a list of configuration variables, see
+   * https://github.com/tesseract-ocr/tesseract/blob/b8b6c158a7f356971d7ffc76b6d688606e05690d/src/ccmain/tesseractclass.h
+   */
+  getVariable(name: string): string {
+    const result = this._engine.getVariable(name);
+    if (!result.success) {
+      throw new Error(`Unable to get variable ${name}`);
+    }
+    return result.value;
+  }
+
+  /**
+   * Set the value of a Tesseract configuration variable.
+   *
+   * For a list of configuration variables, see
+   * https://github.com/tesseract-ocr/tesseract/blob/b8b6c158a7f356971d7ffc76b6d688606e05690d/src/ccmain/tesseractclass.h
+   */
+  setVariable(name: string, value: string) {
+    const result = this._engine.setVariable(name, value);
+    if (result.error) {
+      throw new Error(`Unable to set variable ${name}`);
+    }
+  }
+
+  /**
    * Load a trained text recognition model.
    */
   loadModel(model: Uint8Array | ArrayBuffer) {
