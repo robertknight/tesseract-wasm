@@ -375,6 +375,12 @@ export type CreateOCREngineOptions = {
    */
   wasmBinary?: Uint8Array | ArrayBuffer;
   progressChannel?: MessagePort;
+  /**
+   * These options will be passed to the emscripten initialization function
+   * used to create the tesseract module. Possible options are documented here:
+   * https://github.com/emscripten-core/emscripten/blob/1e7472362a7f5844c5bd23214d725b7a3fd18775/src/settings.js#L876
+   */
+  emscriptenModuleOptions?: Object;
 };
 
 /**
@@ -383,6 +389,7 @@ export type CreateOCREngineOptions = {
 export async function createOCREngine({
   wasmBinary,
   progressChannel,
+  emscriptenModuleOptions,
 }: CreateOCREngineOptions = {}) {
   if (!wasmBinary) {
     const wasmPath = supportsFastBuild()
@@ -396,6 +403,8 @@ export async function createOCREngine({
     const wasmBinaryResponse = await fetch(wasmURL);
     wasmBinary = await wasmBinaryResponse.arrayBuffer();
   }
-  const tessLib = await initTesseractCore({ wasmBinary });
+
+  const moduleOptions = { wasmBinary, ...emscriptenModuleOptions };
+  const tessLib = await initTesseractCore(moduleOptions);
   return new OCREngine(tessLib, progressChannel);
 }
