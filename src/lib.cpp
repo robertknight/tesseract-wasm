@@ -146,7 +146,7 @@ class OCREngine {
     return {};
   }
 
-  GetVariableResult GetVariable(const std::string& var_name) {
+  GetVariableResult GetVariable(const std::string& var_name) const {
     auto name = var_name.c_str();
     std::string val;
     bool success = tesseract_->GetVariableAsString(name, &val);
