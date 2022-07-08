@@ -135,7 +135,7 @@ describe("OCREngine", () => {
     ocr.setVariable(varName, varValue);
     const dpi = ocr.getVariable(varName);
     assert.equal(dpi, varValue);
-  })
+  });
 
   it("extracts bounding boxes from image", async function () {
     this.timeout(2_000);

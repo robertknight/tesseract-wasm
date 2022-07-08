@@ -151,17 +151,18 @@ class OCREngine {
     std::string val;
     bool success = tesseract_->GetVariableAsString(name, &val);
     if (!success) {
-        return {.success = false};
+      return {.success = false};
     }
     return {.success = true, .value = val};
   }
 
-  OCRResult SetVariable(const std::string& var_name, const std::string& var_value) {
+  OCRResult SetVariable(const std::string& var_name,
+                        const std::string& var_value) {
     auto name = var_name.c_str();
     auto value = var_value.c_str();
     bool success = tesseract_->SetVariable(name, value);
     if (!success) {
-        return OCRResult("Failed to set value for variable " + var_name);
+      return OCRResult("Failed to set value for variable " + var_name);
     }
 
     return {};
