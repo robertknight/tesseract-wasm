@@ -34,6 +34,11 @@ struct Orientation {
   float confidence = 0.0f;
 };
 
+struct GetVariableResult {
+  bool success;
+  std::string value;
+};
+
 enum class TextUnit {
   Word,
   Line,
@@ -136,6 +141,28 @@ class OCREngine {
     );
     if (result != 0) {
       return OCRResult("Failed to load training data");
+    }
+
+    return {};
+  }
+
+  GetVariableResult GetVariable(const std::string& var_name) const {
+    auto name = var_name.c_str();
+    std::string val;
+    bool success = tesseract_->GetVariableAsString(name, &val);
+    if (!success) {
+      return {.success = false};
+    }
+    return {.success = true, .value = val};
+  }
+
+  OCRResult SetVariable(const std::string& var_name,
+                        const std::string& var_value) {
+    auto name = var_name.c_str();
+    auto value = var_value.c_str();
+    bool success = tesseract_->SetVariable(name, value);
+    if (!success) {
+      return OCRResult("Failed to set value for variable " + var_name);
     }
 
     return {};
@@ -303,6 +330,10 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
       .field("rotation", &Orientation::rotation)
       .field("confidence", &Orientation::confidence);
 
+  value_object<GetVariableResult>("GetVariableResult")
+      .field("success", &GetVariableResult::success)
+      .field("value", &GetVariableResult::value);
+
   class_<Image>("Image").constructor<int, int>().function("data", &Image::Data);
 
   class_<OCREngine>("OCREngine")
@@ -312,8 +343,10 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
       .function("getOrientation", &OCREngine::GetOrientation)
       .function("getText", &OCREngine::GetText)
       .function("getTextBoxes", &OCREngine::GetTextBoxes)
+      .function("getVariable", &OCREngine::GetVariable)
       .function("loadImage", &OCREngine::LoadImage)
-      .function("loadModel", &OCREngine::LoadModel);
+      .function("loadModel", &OCREngine::LoadModel)
+      .function("setVariable", &OCREngine::SetVariable);
 
   value_object<OCRResult>("OCRResult").field("error", &OCRResult::error);
 

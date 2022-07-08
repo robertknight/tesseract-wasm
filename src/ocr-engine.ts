@@ -121,6 +121,35 @@ export class OCREngine {
   }
 
   /**
+   * Get the value, represented as a string, of a Tesseract configuration variable.
+   *
+   * See {@link setVariable} for available variables.
+   */
+  getVariable(name: string): string {
+    const result = this._engine.getVariable(name);
+    if (!result.success) {
+      throw new Error(`Unable to get variable ${name}`);
+    }
+    return result.value;
+  }
+
+  /**
+   * Set the value of a Tesseract configuration variable.
+   *
+   * For a list of configuration variables, see
+   * https://github.com/tesseract-ocr/tesseract/blob/677f5822f247ccb12b4e026265e88b959059fb59/src/ccmain/tesseractclass.cpp#L53
+   *
+   * If you have Tesseract installed locally, executing `tesseract --print-parameters`
+   * will also display a list of configuration variables.
+   */
+  setVariable(name: string, value: string) {
+    const result = this._engine.setVariable(name, value);
+    if (result.error) {
+      throw new Error(`Unable to set variable ${name}`);
+    }
+  }
+
+  /**
    * Load a trained text recognition model.
    */
   loadModel(model: Uint8Array | ArrayBuffer) {
