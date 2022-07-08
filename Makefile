@@ -168,7 +168,7 @@ EMCC_FLAGS =\
   --post-js=src/tesseract-init.js
 
 # Build main WASM binary for browsers that support WASM SIMD.
-build/tesseract-core.js build/tesseract-core.wasm: src/lib.cpp build/tesseract.uptodate
+build/tesseract-core.js build/tesseract-core.wasm: src/lib.cpp src/tesseract-init.js build/tesseract.uptodate
 	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
 		-I$(INSTALL_DIR)/include/ -L$(INSTALL_DIR)/lib/ -ltesseract -lleptonica -lembind \
 		-o build/tesseract-core.js
@@ -176,7 +176,7 @@ build/tesseract-core.js build/tesseract-core.wasm: src/lib.cpp build/tesseract.u
 
 # Build fallback WASM binary for browsers that don't support WASM SIMD. The JS
 # output from this build is not used.
-build/tesseract-core-fallback.js build/tesseract-core-fallback.wasm: src/lib.cpp build/tesseract-fallback.uptodate
+build/tesseract-core-fallback.js build/tesseract-core-fallback.wasm: src/lib.cpp src/tesseract-init.js build/tesseract-fallback.uptodate
 	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
 		-I$(INSTALL_DIR)/include/ -L$(FALLBACK_INSTALL_DIR)/lib/ -L$(INSTALL_DIR)/lib -ltesseract -lleptonica -lembind \
 		-o build/tesseract-core-fallback.js
