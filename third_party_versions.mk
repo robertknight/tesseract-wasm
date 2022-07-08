@@ -1,4 +1,5 @@
-EMSDK_COMMIT=93f21c9ef30bab52de24f9d4ea3f2f377cf6326a
+# v3.1.15
+EMSDK_COMMIT=8281708351554b8d1eda9dafdca851b0b9be1eeb
 
 # The Leptonica commit is not a stable release because we need a recent (as of
 # 2022-05-22) commit where WEBP and JPEG support is optional.
