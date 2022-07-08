@@ -1,3 +1,5 @@
+include third_party_versions.mk
+
 EMSDK_DIR=$(PWD)/third_party/emsdk/upstream/emscripten
 INSTALL_DIR=$(PWD)/install
 FALLBACK_INSTALL_DIR=$(INSTALL_DIR)/fallback
@@ -55,10 +57,11 @@ release: clean lib typecheck test
 gh-pages:
 	./update-gh-pages.sh
 
-EMSDK_COMMIT=93f21c9ef30bab52de24f9d4ea3f2f377cf6326a
-third_party/emsdk:
-	git clone --depth 1 https://github.com/emscripten-core/emsdk.git $@
+third_party/emsdk: third_party_versions.mk
+	mkdir -p third_party/emsdk
+	test -d $@/.git || git clone --depth 1 https://github.com/emscripten-core/emsdk.git $@
 	cd $@ && git fetch origin $(EMSDK_COMMIT) && git checkout $(EMSDK_COMMIT)
+	touch $@
 
 build/emsdk.uptodate: third_party/emsdk | build
 	third_party/emsdk/emsdk install latest
@@ -72,13 +75,11 @@ LEPTONICA_FLAGS=\
 	-DOPENJPEG_SUPPORT=OFF \
 	-DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
 
-# The Leptonica commit is not a stable release because we need a recent (as of
-# 2022-05-22) commit where WEBP and JPEG support is optional.
-LEPTONICA_COMMIT=ac9a152c6f2ea048bb10660bacfc66181186b825
-third_party/leptonica:
+third_party/leptonica: third_party_versions.mk
 	mkdir -p third_party/leptonica
-	git clone --depth 1 https://github.com/DanBloomberg/leptonica.git $@
+	test -d $@/.git || git clone --depth 1 https://github.com/DanBloomberg/leptonica.git $@
 	cd $@ && git fetch origin $(LEPTONICA_COMMIT) && git checkout $(LEPTONICA_COMMIT)
+	touch $@
 
 build/leptonica.uptodate: third_party/leptonica build/emsdk.uptodate
 	mkdir -p build/leptonica
@@ -122,12 +123,12 @@ TESSERACT_FALLBACK_FLAGS=$(TESSERACT_FLAGS) \
 	-DCMAKE_INSTALL_PREFIX=$(FALLBACK_INSTALL_DIR) \
   -DCMAKE_CXX_FLAGS=$(TESSERACT_DEFINES)
 
-TESSERACT_COMMIT=5.2.0
-third_party/tesseract:
+third_party/tesseract: third_party_versions.mk
 	mkdir -p third_party/tesseract
-	git clone --depth 1 https://github.com/tesseract-ocr/tesseract.git $@
+	test -d $@/.git || git clone --depth 1 https://github.com/tesseract-ocr/tesseract.git $@
 	cd $@ && git fetch origin $(TESSERACT_COMMIT) && git checkout $(TESSERACT_COMMIT)
-	cd $@ && git apply ../../patches/tesseract.diff
+	cd $@ && git stash && git apply ../../patches/tesseract.diff
+	touch $@
 
 third_party/tessdata_fast:
 	mkdir -p third_party/tessdata_fast
