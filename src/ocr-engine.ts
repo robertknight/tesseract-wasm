@@ -124,7 +124,10 @@ export class OCREngine {
    * Get the value, represented as a string, of a Tesseract configuration variable.
    *
    * For a list of configuration variables, see
-   * https://github.com/tesseract-ocr/tesseract/blob/b8b6c158a7f356971d7ffc76b6d688606e05690d/src/ccmain/tesseractclass.h
+   * https://github.com/tesseract-ocr/tesseract/blob/677f5822f247ccb12b4e026265e88b959059fb59/src/ccmain/tesseractclass.cpp#L53
+   *
+   * Executing `tesseract --print-parameters` from a CLI will also result in a list of configuration variables for your
+   * locally tesseract version.
    */
   getVariable(name: string): string {
     const result = this._engine.getVariable(name);
@@ -138,7 +141,10 @@ export class OCREngine {
    * Set the value of a Tesseract configuration variable.
    *
    * For a list of configuration variables, see
-   * https://github.com/tesseract-ocr/tesseract/blob/b8b6c158a7f356971d7ffc76b6d688606e05690d/src/ccmain/tesseractclass.h
+   * https://github.com/tesseract-ocr/tesseract/blob/677f5822f247ccb12b4e026265e88b959059fb59/src/ccmain/tesseractclass.cpp#L53
+   *
+   * Executing `tesseract --print-parameters` from a CLI will also result in a list of configuration variables for your
+   * locally tesseract version.
    */
   setVariable(name: string, value: string) {
     const result = this._engine.setVariable(name, value);
