@@ -12,9 +12,12 @@ import { loadImage, resolve, toImageData } from "./util.js";
 
 const { StartOfLine, EndOfLine } = layoutFlags;
 
-async function createEngine({ loadModel = true } = {}) {
+async function createEngine({
+  loadModel = true,
+  emscriptenModuleOptions = {},
+} = {}) {
   const wasmBinary = await readFile(resolve("../dist/tesseract-core.wasm"));
-  const ocr = await createOCREngine({ wasmBinary });
+  const ocr = await createOCREngine({ wasmBinary, emscriptenModuleOptions });
 
   if (loadModel) {
     const model = await readFile(
@@ -284,6 +287,26 @@ describe("OCREngine", () => {
     for (let phrase of expectedPhrases) {
       assert.include(text, phrase);
     }
+  });
+
+  it("accepts emscripten module options", async function () {
+    this.timeout(5_000);
+
+    let stderr = "";
+    const writeToStderr = (s) => {
+      stderr += s;
+    };
+
+    const ocr = await createEngine({
+      emscriptenModuleOptions: { printErr: writeToStderr },
+    });
+
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
+    ocr.loadImage(imageData);
+
+    ocr.getText();
+
+    assert.strictEqual(stderr, "Estimating resolution as 171");
   });
 
   it("reports recognition progress", async function () {
