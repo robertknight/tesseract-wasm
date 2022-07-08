@@ -64,8 +64,8 @@ third_party/emsdk: third_party_versions.mk
 	touch $@
 
 build/emsdk.uptodate: third_party/emsdk | build
-	third_party/emsdk/emsdk install latest
-	third_party/emsdk/emsdk activate latest
+	third_party/emsdk/emsdk install $(EMSDK_VERSION)
+	third_party/emsdk/emsdk activate $(EMSDK_VERSION)
 	touch build/emsdk.uptodate
 
 # Compile flags for Leptonica. These turn off support for various image formats to
