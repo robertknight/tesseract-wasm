@@ -29,7 +29,7 @@
     "@rollup/plugin-virtual": "^2.1.0",
     "chai": "^4.3.6",
     "mocha": "^10.0.0",
-    "prettier": "^2.6.2",
+    "prettier": "^2.7.1",
     "rollup": "^2.73.0",
     "sharp": "^0.30.4",
     "typedoc": "^0.22.17",
