@@ -33,7 +33,7 @@
     "rollup": "^2.73.0",
     "sharp": "^0.30.4",
     "typedoc": "^0.22.17",
-    "typescript": "^4.6.4"
+    "typescript": "^4.7.4"
   },
   "dependencies": {
     "comlink": "^4.3.1"
