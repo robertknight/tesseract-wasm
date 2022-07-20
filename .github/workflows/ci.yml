@@ -20,7 +20,7 @@ jobs:
     - name: Build examples
       run: make examples
     - name: Typecheck
-      run: npm run-script typecheck
+      run: make typecheck
     - name: Check formatting
       run: make checkformat
     - name: Run tests
