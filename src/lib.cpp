@@ -44,6 +44,26 @@ enum class TextUnit {
   Line,
 };
 
+enum class PageSegMode {
+  PSM_OSD_ONLY,      ///< Orientation and script detection only.
+  PSM_AUTO_OSD,      ///< Automatic page segmentation with orientation and
+                         ///< script detection. (OSD)
+  PSM_AUTO_ONLY,     ///< Automatic page segmentation, but no OSD, or OCR.
+  PSM_AUTO,          ///< Fully automatic page segmentation, but no OSD.
+  PSM_SINGLE_COLUMN, ///< Assume a single column of text of variable sizes.
+  PSM_SINGLE_BLOCK_VERT_TEXT, ///< Assume a single uniform block of
+                                  ///< vertically aligned text.
+  PSM_SINGLE_BLOCK, ///< Assume a single uniform block of text. (Default.)
+  PSM_SINGLE_LINE,  ///< Treat the image as a single text line.
+  PSM_SINGLE_WORD,  ///< Treat the image as a single word.
+  PSM_CIRCLE_WORD,  ///< Treat the image as a single word in a circle.
+  PSM_SINGLE_CHAR, ///< Treat the image as a single character.
+  PSM_SPARSE_TEXT, ///< Find as much text as possible in no particular order.
+  PSM_SPARSE_TEXT_OSD, ///< Sparse text with orientation and script det.
+  PSM_RAW_LINE, ///< Treat the image as a single text line, bypassing
+                     ///< hacks that are Tesseract-specific.
+};
+
 template <class T>
 std::unique_ptr<T> unique_from_raw(T* ptr) {
   return std::unique_ptr<T>(ptr);
@@ -168,7 +188,7 @@ class OCREngine {
     return {};
   }
 
-  OCRResult LoadImage(const Image& image) {
+  OCRResult LoadImage(const Image& image, const PageSegMode segmode) {
     // Initialize for layout analysis only if a model has not been loaded.
     // This is a no-op if a model has been loaded.
     tesseract_->InitForAnalysePage();
@@ -176,7 +196,7 @@ class OCREngine {
     // Enable page segmentation and layout analysis. Must be called after `Init`
     // to take effect. Without this Tesseract defaults to treating the whole
     // page as one block of text.
-    tesseract_->SetPageSegMode(tesseract::PSM_AUTO);
+    tesseract_->SetPageSegMode(static_cast<tesseract::PageSegMode>(segmode));
 
     tesseract_->SetImage(image.Pix());
     tesseract_->SetRectangle(0, 0, image.Width(), image.Height());
@@ -354,6 +374,22 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
       .value("Line", TextUnit::Line)
       .value("Word", TextUnit::Word);
 
+  enum_<PageSegMode>("PageSegMode")
+  .value("PSM_OSD_ONLY", PageSegMode::PSM_OSD_ONLY)
+  .value("PSM_AUTO_OSD", PageSegMode::PSM_AUTO_OSD)
+  .value("PSM_AUTO_ONLY", PageSegMode::PSM_AUTO_ONLY)
+  .value("PSM_AUTO", PageSegMode::PSM_AUTO)
+  .value("PSM_SINGLE_COLUMN", PageSegMode::PSM_SINGLE_COLUMN)
+  .value("PSM_SINGLE_BLOCK_VERT_TEXT", PageSegMode::PSM_SINGLE_BLOCK_VERT_TEXT)
+  .value("PSM_SINGLE_BLOCK", PageSegMode::PSM_SINGLE_BLOCK)
+  .value("PSM_SINGLE_LINE", PageSegMode::PSM_SINGLE_LINE)
+  .value("PSM_SINGLE_WORD", PageSegMode::PSM_SINGLE_WORD)
+  .value("PSM_CIRCLE_WORD", PageSegMode::PSM_CIRCLE_WORD)
+  .value("PSM_SINGLE_CHAR", PageSegMode::PSM_SINGLE_CHAR)
+  .value("PSM_SPARSE_TEXT",PageSegMode::PSM_SPARSE_TEXT)
+  .value("PSM_SPARSE_TEXT_OSD", PageSegMode::PSM_SPARSE_TEXT_OSD)
+  .value("PSM_RAW_LINE", PageSegMode::PSM_RAW_LINE);
+ 
   register_vector<IntRect>("vector<IntRect>");
   register_vector<TextRect>("vector<TextRect>");
 }
