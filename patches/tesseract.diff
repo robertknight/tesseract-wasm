@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 102718ab..b7897cd4 100644
+index 8c6845cb..5a948117 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -90,6 +90,7 @@ option(ENABLE_LTO "Enable link-time optimization" OFF)
@@ -10,7 +10,7 @@ index 102718ab..b7897cd4 100644
  option(BUILD_TESTS "Build tests" OFF)
  option(USE_SYSTEM_ICU "Use system ICU" OFF)
  option(DISABLE_ARCHIVE "Disable build with libarchive (if available)" OFF)
-@@ -560,9 +561,7 @@ file(
+@@ -565,9 +566,7 @@ file(
    src/cutil/*.cpp
    src/dict/*.cpp
    src/lstm/*.cpp
@@ -20,7 +20,7 @@ index 102718ab..b7897cd4 100644
    src/wordrec/*.cpp)
  
  if(DISABLED_LEGACY_ENGINE)
-@@ -708,14 +707,7 @@ file(
+@@ -713,14 +712,7 @@ file(
  
  set(TESSERACT_SRC
      ${TESSERACT_SRC}
@@ -36,7 +36,7 @@ index 102718ab..b7897cd4 100644
  
  set(TESSERACT_CONFIGS
    tessdata/configs/alto
-@@ -846,14 +838,16 @@ endif()
+@@ -858,14 +850,16 @@ endif()
  # EXECUTABLE tesseract
  # ##############################################################################
  
@@ -60,7 +60,7 @@ index 102718ab..b7897cd4 100644
  endif()
  
  # ##############################################################################
-@@ -887,7 +881,11 @@ write_basic_package_version_file(
+@@ -899,7 +893,11 @@ write_basic_package_version_file(
  
  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tesseract.pc
          DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
@@ -74,14 +74,16 @@ index 102718ab..b7897cd4 100644
    TARGETS libtesseract
    EXPORT TesseractTargets
 diff --git a/src/arch/simddetect.cpp b/src/arch/simddetect.cpp
-index 8c8605c3..b53de86d 100644
+index 1afe5a5d..cb8c6d4c 100644
 --- a/src/arch/simddetect.cpp
 +++ b/src/arch/simddetect.cpp
-@@ -41,8 +41,10 @@
+@@ -40,10 +40,12 @@
+ 
  #endif
  
- #if defined(HAVE_AVX) || defined(HAVE_AVX2) || defined(HAVE_FMA) || defined(HAVE_SSE4_1)
 +#if !defined(__EMSCRIPTEN__)
+ #if defined(HAVE_AVX) || defined(HAVE_AVX2) || defined(HAVE_FMA) || defined(HAVE_SSE4_1)
+ // See https://en.wikipedia.org/wiki/CPUID.
  #  define HAS_CPUID
  #endif
 +#endif
@@ -89,10 +91,10 @@ index 8c8605c3..b53de86d 100644
  #if defined(HAS_CPUID)
  #  if defined(__GNUC__)
 diff --git a/src/ccmain/pagesegmain.cpp b/src/ccmain/pagesegmain.cpp
-index f3edc81a..33eac9c1 100644
+index 0af44607..718e73ef 100644
 --- a/src/ccmain/pagesegmain.cpp
 +++ b/src/ccmain/pagesegmain.cpp
-@@ -224,7 +224,7 @@ int Tesseract::AutoPageSeg(PageSegMode pageseg_mode, BLOCK_LIST *blocks, TO_BLOC
+@@ -222,7 +222,7 @@ int Tesseract::AutoPageSeg(PageSegMode pageseg_mode, BLOCK_LIST *blocks, TO_BLOC
      }
  #endif // ndef DISABLED_LEGACY_ENGINE
      result = finder->FindBlocks(pageseg_mode, scaled_color_, scaled_factor_, to_block,
@@ -101,7 +103,7 @@ index f3edc81a..33eac9c1 100644
                                  &found_blocks, diacritic_blobs, to_blocks);
      if (result >= 0) {
        finder->GetDeskewVectors(&deskew_, &reskew_);
-@@ -281,17 +281,17 @@ ColumnFinder *Tesseract::SetupPageSegAndDetectOrientation(PageSegMode pageseg_mo
+@@ -279,17 +279,17 @@ ColumnFinder *Tesseract::SetupPageSegAndDetectOrientation(PageSegMode pageseg_mo
    ICOORD bleft(0, 0);
  
    ASSERT_HOST(pix_binary_ != nullptr);
@@ -124,7 +126,7 @@ index f3edc81a..33eac9c1 100644
    if (tessedit_dump_pageseg_images) {
      Image pix_no_image_ = nullptr;
      if (*photo_mask_pix != nullptr) {
-@@ -299,7 +299,7 @@ ColumnFinder *Tesseract::SetupPageSegAndDetectOrientation(PageSegMode pageseg_mo
+@@ -297,7 +297,7 @@ ColumnFinder *Tesseract::SetupPageSegAndDetectOrientation(PageSegMode pageseg_mo
      } else {
        pix_no_image_ = pix_binary_.clone();
      }
@@ -134,10 +136,10 @@ index f3edc81a..33eac9c1 100644
    }
    if (!PSM_COL_FIND_ENABLED(pageseg_mode)) {
 diff --git a/src/ccmain/tesseractclass.cpp b/src/ccmain/tesseractclass.cpp
-index 1eabcc51..d4fee4fc 100644
+index fd58ac87..517f925e 100644
 --- a/src/ccmain/tesseractclass.cpp
 +++ b/src/ccmain/tesseractclass.cpp
-@@ -481,8 +481,10 @@ Dict &Tesseract::getDict() {
+@@ -487,8 +487,10 @@ Dict &Tesseract::getDict() {
  }
  
  void Tesseract::Clear() {
@@ -150,7 +152,7 @@ index 1eabcc51..d4fee4fc 100644
    pix_binary_.destroy();
    pix_grey_.destroy();
    pix_thresholds_.destroy();
-@@ -566,7 +568,7 @@ void Tesseract::PrepareForPageseg() {
+@@ -572,7 +574,7 @@ void Tesseract::PrepareForPageseg() {
    // the newly split image.
    splitter_.set_orig_pix(pix_binary());
    splitter_.set_pageseg_split_strategy(max_pageseg_strategy);
@@ -159,7 +161,7 @@ index 1eabcc51..d4fee4fc 100644
      ASSERT_HOST(splitter_.splitted_image());
      pix_binary_.destroy();
      pix_binary_ = splitter_.splitted_image().clone();
-@@ -593,7 +595,7 @@ void Tesseract::PrepareForTessOCR(BLOCK_LIST *block_list, Tesseract *osd_tess, O
+@@ -599,7 +601,7 @@ void Tesseract::PrepareForTessOCR(BLOCK_LIST *block_list, Tesseract *osd_tess, O
    splitter_.set_segmentation_block_list(block_list);
    splitter_.set_ocr_split_strategy(max_ocr_strategy);
    // Run the splitter for OCR
@@ -169,10 +171,10 @@ index 1eabcc51..d4fee4fc 100644
    ASSERT_HOST(splitter_.orig_pix());
    pix_binary_.destroy();
 diff --git a/src/ccmain/tesseractclass.h b/src/ccmain/tesseractclass.h
-index 94681ab6..68cc910a 100644
+index 732bb9e6..030aa5bc 100644
 --- a/src/ccmain/tesseractclass.h
 +++ b/src/ccmain/tesseractclass.h
-@@ -984,7 +984,7 @@ private:
+@@ -986,7 +986,7 @@ private:
    // Thresholds that were used to generate the thresholded image from grey.
    Image pix_thresholds_;
    // Debug images. If non-empty, will be written on destruction.
