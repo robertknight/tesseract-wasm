@@ -19,8 +19,7 @@ This Tesseract build has been optimized for use in the browser by:
   download (with Brotli compression).
 
 - Using [WebAssembly SIMD](https://v8.dev/features/simd) when available
-  (Chrome >= 91, Firefox >= 90, Safari
-  [??](https://bugs.webkit.org/show_bug.cgi?id=222382)) to improve text
+  (Chrome >= 91, Firefox >= 90, Safari >= 16.3) to improve text
   recognition performance.
 
 - Providing a high-level API that can be used to run web pages without blocking
