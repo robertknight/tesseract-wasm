@@ -286,6 +286,24 @@ describe("OCREngine", () => {
     }
   });
 
+  it("extracts hOCR from image", async function () {
+    this.timeout(5_000);
+
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
+    ocr.loadImage(imageData);
+
+    const html = ocr.getHOCR();
+
+    const expectedPhrases = [
+      "class='ocr_page' id='page_1'",
+      "<span class='ocrx_word' id='word_1_1' title='bbox 37 233 135 265; x_wconf 93'>Image</span>",
+    ];
+
+    for (let phrase of expectedPhrases) {
+      assert.include(html, phrase);
+    }
+  });
+
   it("reports recognition progress", async function () {
     this.timeout(5_000);
 

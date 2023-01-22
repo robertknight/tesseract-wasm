@@ -219,6 +219,25 @@ export class OCRClient {
   }
 
   /**
+   * Perform layout analysis and text recognition on the current image, if
+   * not already done, and return the image's text in hOCR format (see
+   * https://en.wikipedia.org/wiki/HOCR).
+   */
+  async getHOCR(onProgress?: ProgressListener): Promise<string> {
+    const engine = await this._ocrEngine;
+    if (onProgress) {
+      this._addProgressListener(onProgress);
+    }
+    try {
+      return await engine.getHOCR();
+    } finally {
+      if (onProgress) {
+        this._removeProgressListener(onProgress);
+      }
+    }
+  }
+
+  /**
    * Attempt to determine the orientation of the image.
    *
    * This currently uses a simplistic algorithm [1] which is designed for

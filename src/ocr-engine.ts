@@ -283,6 +283,22 @@ export class OCREngine {
   }
 
   /**
+   * Perform layout analysis and text recognition on the current image, if
+   * not already done, and return the page text in hOCR format.
+   *
+   * A text recognition model must be loaded with {@link loadModel} before this
+   * is called.
+   */
+  getHOCR(onProgress?: ProgressListener): string {
+    this._checkImageLoaded();
+    this._checkModelLoaded();
+    return this._engine.getHOCR((progress: number) => {
+      onProgress?.(progress);
+      this._progressChannel?.postMessage({ progress });
+    });
+  }
+
+  /**
    * Attempt to determine the orientation of the document image in degrees.
    *
    * This currently uses a simplistic algorithm [1] which is designed for

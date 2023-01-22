@@ -165,6 +165,7 @@ EMCC_FLAGS =\
   -sMODULARIZE=1 \
   -sALLOW_MEMORY_GROWTH\
   -sMAXIMUM_MEMORY=128MB \
+  -std=c++20 \
   --post-js=src/tesseract-init.js
 
 # Build main WASM binary for browsers that support WASM SIMD.
