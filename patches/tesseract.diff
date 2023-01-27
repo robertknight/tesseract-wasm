@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 8c6845cb..5a948117 100644
+index 8c6845cb..fdcfc4a8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -90,6 +90,7 @@ option(ENABLE_LTO "Enable link-time optimization" OFF)
@@ -20,11 +20,10 @@ index 8c6845cb..5a948117 100644
    src/wordrec/*.cpp)
  
  if(DISABLED_LEGACY_ENGINE)
-@@ -713,14 +712,7 @@ file(
- 
+@@ -714,13 +713,7 @@ file(
  set(TESSERACT_SRC
      ${TESSERACT_SRC}
--    src/api/baseapi.cpp
+     src/api/baseapi.cpp
 -    src/api/capi.cpp
 -    src/api/renderer.cpp
 -    src/api/altorenderer.cpp
@@ -32,11 +31,11 @@ index 8c6845cb..5a948117 100644
 -    src/api/lstmboxrenderer.cpp
 -    src/api/pdfrenderer.cpp
 -    src/api/wordstrboxrenderer.cpp)
-+    src/api/baseapi.cpp)
++    src/api/hocrrenderer.cpp)
  
  set(TESSERACT_CONFIGS
    tessdata/configs/alto
-@@ -858,14 +850,16 @@ endif()
+@@ -858,14 +851,16 @@ endif()
  # EXECUTABLE tesseract
  # ##############################################################################
  
@@ -60,7 +59,7 @@ index 8c6845cb..5a948117 100644
  endif()
  
  # ##############################################################################
-@@ -899,7 +893,11 @@ write_basic_package_version_file(
+@@ -899,7 +894,11 @@ write_basic_package_version_file(
  
  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tesseract.pc
          DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)

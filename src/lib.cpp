@@ -4,6 +4,7 @@
 #include <tesseract/baseapi.h>
 #include <tesseract/ocrclass.h>
 
+#include <format>
 #include <memory>
 #include <string>
 #include <vector>
@@ -212,6 +213,32 @@ class OCREngine {
     return string_from_raw(tesseract_->GetUTF8Text());
   }
 
+  std::string GetHOCR(const emscripten::val& progress_callback) {
+    DoOCR(progress_callback);
+    auto hocr_body = string_from_raw(tesseract_->GetHOCRText(0));
+
+    // The header and footer of the hOCR document are taken from
+    // `TessHOcrRenderer::BeginDocumentHandler` and
+    // `TessHOcrRenderer::EndDocumentHandler` respectively. We can't use that
+    // class directly because it expects to write to a file.
+    auto hocr_doc = std::format(R"(<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>hOCR text</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <meta name='ocr-system' content='tesseract {}' />
+  <meta name='ocr-capabilities' content='ocr_page ocr_carea ocr_par ocr_line ocrx_word ocrp_wconf' />
+</head>
+<body>
+  {}
+</body>
+</html>)",
+                                tesseract_->Version(), hocr_body);
+
+    return hocr_doc;
+  }
+
   Orientation GetOrientation() {
     // Tesseract's orientation detection is part of the legacy (non-LSTM)
     // engine, which is not compiled in to reduce binary size. Hence we use
@@ -340,6 +367,7 @@ EMSCRIPTEN_BINDINGS(ocrlib) {
       .constructor<>()
       .function("clearImage", &OCREngine::ClearImage)
       .function("getBoundingBoxes", &OCREngine::GetBoundingBoxes)
+      .function("getHOCR", &OCREngine::GetHOCR)
       .function("getOrientation", &OCREngine::GetOrientation)
       .function("getText", &OCREngine::GetText)
       .function("getTextBoxes", &OCREngine::GetTextBoxes)
