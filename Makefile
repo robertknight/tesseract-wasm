@@ -164,7 +164,7 @@ EMCC_FLAGS =\
   -sFILESYSTEM=0 \
   -sMODULARIZE=1 \
   -sALLOW_MEMORY_GROWTH\
-  -sMAXIMUM_MEMORY=128MB \
+  -sMAXIMUM_MEMORY=1GB \
   -std=c++20 \
   --post-js=src/tesseract-init.js
 
