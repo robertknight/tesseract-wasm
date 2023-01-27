@@ -117,6 +117,7 @@ function OCRDemoApp() {
   const [wordBoxes, setWordBoxes] = useState([]);
   const [orientation, setOrientation] = useState(null);
   const [ocrTime, setOCRTime] = useState(null);
+  const [outputFormat, setOutputFormat] = useState("text");
 
   const canvasRef = useRef(null);
 
@@ -136,6 +137,8 @@ function OCRDemoApp() {
 
     const context = canvasRef.current.getContext("2d");
     context.drawImage(documentImage, 0, 0);
+
+    let cancelled = false;
 
     const doOCR = async () => {
       if (!ocrClient.current) {
@@ -157,6 +160,9 @@ function OCRDemoApp() {
       try {
         setStatus("Loading image");
         await ocr.loadImage(documentImage);
+        if (cancelled) {
+          return;
+        }
 
         const orientation = await ocr.getOrientation();
         setOrientation(orientation);
@@ -165,6 +171,10 @@ function OCRDemoApp() {
         setStatus("Recognizing text");
         let boxes = await ocr.getTextBoxes("word", setOCRProgress);
         boxes = boxes.filter((box) => box.text.trim() !== "");
+
+        if (cancelled) {
+          return;
+        }
         setWordBoxes(boxes);
 
         const endTime = performance.now();
@@ -172,7 +182,19 @@ function OCRDemoApp() {
 
         // Get the text as a single string. This will be quick since OCR has
         // already been performed.
-        const text = await ocr.getText();
+        let text;
+        switch (outputFormat) {
+          case "hocr":
+            text = await ocr.getHOCR();
+            break;
+          case "text":
+            text = await ocr.getText();
+            break;
+        }
+
+        if (cancelled) {
+          return;
+        }
         setDocumentText(text);
       } catch (err) {
         setError(err);
@@ -182,7 +204,11 @@ function OCRDemoApp() {
       }
     };
     doOCR();
-  }, [documentImage]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [documentImage, outputFormat]);
 
   const loadImage = async (file) => {
     try {
@@ -235,6 +261,17 @@ function OCRDemoApp() {
         </div>
       )}
       <FileDropZone onDrop={loadImage} />
+      <div>
+        <label htmlFor="output-format">Output format:</label>
+        <select
+          id="output-format"
+          onChange={(e) => setOutputFormat(e.target.value)}
+          value={outputFormat}
+        >
+          <option value="text">Plain text</option>
+          <option value="hocr">hOCR</option>
+        </select>
+      </div>
       {status !== null && <div>{status}…</div>}
       {ocrTime !== null && (
         <div>
