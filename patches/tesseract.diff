@@ -89,6 +89,21 @@ index 1afe5a5d..cb8c6d4c 100644
  
  #if defined(HAS_CPUID)
  #  if defined(__GNUC__)
+diff --git a/src/ccmain/pageiterator.cpp b/src/ccmain/pageiterator.cpp
+index 64ff7f66..c0f80e5f 100644
+--- a/src/ccmain/pageiterator.cpp
++++ b/src/ccmain/pageiterator.cpp
+@@ -582,7 +582,9 @@ void PageIterator::Orientation(tesseract::Orientation *orientation,
+   up_in_image.rotate(block->re_rotation());
+ 
+   if (up_in_image.x() == 0.0F) {
+-    if (up_in_image.y() > 0.0F) {
++    // tesseract-wasm note: `up_in_image` will be a null vector if orientation
++    // info is not available. In that case, assume page up.
++    if (up_in_image.y() >= 0.0F) {
+       *orientation = ORIENTATION_PAGE_UP;
+     } else {
+       *orientation = ORIENTATION_PAGE_DOWN;
 diff --git a/src/ccmain/pagesegmain.cpp b/src/ccmain/pagesegmain.cpp
 index 0af44607..718e73ef 100644
 --- a/src/ccmain/pagesegmain.cpp

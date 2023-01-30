@@ -294,9 +294,11 @@ describe("OCREngine", () => {
 
     const html = ocr.getHOCR();
 
+    // Expected output snippets, covering different kinds of entity (word, line, page).
     const expectedPhrases = [
       "class='ocr_page' id='page_1'",
       "<span class='ocrx_word' id='word_1_1' title='bbox 37 233 135 265; x_wconf 93'>Image</span>",
+      `<span class='ocr_line' id='line_1_5' title="bbox 36 443 1026 462; baseline 0 -5; x_size 18; x_descenders 4; x_ascenders 3">`,
     ];
 
     for (let phrase of expectedPhrases) {
