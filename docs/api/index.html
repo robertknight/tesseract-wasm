@@ -1,0 +1,115 @@
+<!DOCTYPE html><html class="default"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>tesseract-wasm</title><meta name="description" content="Documentation for tesseract-wasm"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.body.classList.add(localStorage.getItem("tsd-theme") || "os")</script><header><div class="tsd-page-toolbar"><div class="container"><div class="table-wrap"><div class="table-cell" id="tsd-search" data-base="."><div class="field"><label for="tsd-search-field" class="tsd-widget search no-caption">Search</label><input type="text" id="tsd-search-field"/></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">tesseract-wasm</a></div><div class="table-cell" id="tsd-widgets"><div id="tsd-filter"><a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a><div class="tsd-filter-group"><div class="tsd-select" id="tsd-filter-visibility"><span class="tsd-select-label">All</span><ul class="tsd-select-list"><li data-value="public">Public</li><li data-value="protected">Public/Protected</li><li data-value="private" class="selected">All</li></ul></div> <input type="checkbox" id="tsd-filter-inherited" checked/><label class="tsd-widget" for="tsd-filter-inherited">Inherited</label><input type="checkbox" id="tsd-filter-externals" checked/><label class="tsd-widget" for="tsd-filter-externals">Externals</label></div></div><a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a></div></div></div></div><div class="tsd-page-title"><div class="container"><h1>tesseract-wasm </h1></div></div></header><div class="container container-main"><div class="row"><div class="col-8 col-content"><div class="tsd-panel tsd-typography">
+<a href="#tesseract-wasm" id="tesseract-wasm" style="color: inherit; text-decoration: none;">
+  <h1>tesseract-wasm</h1>
+</a>
+<p><img src="https://img.shields.io/npm/v/tesseract-wasm" alt="npm package"></p>
+<p>A WebAssembly build of the <a href="https://github.com/tesseract-ocr/tesseract">Tesseract</a>
+OCR engine for use in the browser and Node.</p>
+<p>tesseract-wasm can detect and recognize text in document images. It supports multiple languages via different <a href="https://tesseract-ocr.github.io/tessdoc/Data-Files">trained models</a>.</p>
+<p>👉 <a href="https://robertknight.github.io/tesseract-wasm/"><strong>Try the demo</strong></a> (Currently supports English)</p>
+
+<a href="#features" id="features" style="color: inherit; text-decoration: none;">
+  <h2>Features</h2>
+</a>
+<p>This Tesseract build has been optimized for use in the browser by:</p>
+<ul>
+<li><p>Stripping functionality which is not needed in a browser environment (eg.
+code to parse various image formats) to reduce download size and improve
+startup performance. The library and English training data require a ~2.1MB
+download (with Brotli compression).</p>
+</li>
+<li><p>Using <a href="https://v8.dev/features/simd">WebAssembly SIMD</a> when available
+(Chrome &gt;= 91, Firefox &gt;= 90, Safari &gt;= 16.3) to improve text
+recognition performance.</p>
+</li>
+<li><p>Providing a high-level API that can be used to run web pages without blocking
+interaction and a low-level API that provides more control over execution.</p>
+</li>
+</ul>
+
+<a href="#setup" id="setup" style="color: inherit; text-decoration: none;">
+  <h2>Setup</h2>
+</a>
+<ol>
+<li><p>Add the tesseract-wasm library to your project:</p>
+<pre><code class="language-sh"><span class="hl-0">npm install tesseract-wasm</span>
+</code></pre>
+</li>
+<li><p>Serve the <code>tesseract-core.wasm</code>, <code>tesseract-core-fallback.wasm</code> and
+<code>tesseract-worker.js</code> files from <code>node_modules/tesseract-wasm/dist</code> alongside
+your JavaScript bundle.</p>
+</li>
+<li><p>Get the training data file(s) for the languages you want to support from the
+<a href="https://github.com/tesseract-ocr/tessdata_fast">tessdata_fast</a> repo and
+serve it from a URL that your JavaScript can load. The <code>eng.traineddata</code>
+file supports English for example, and also works with many documents in
+other languages that use the same script.</p>
+</li>
+</ol>
+
+<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
+  <h2>Usage</h2>
+</a>
+<p>tesseract-wasm provides two APIs: a high-level asynchronous API (<code>OCRClient</code>)
+and a lower-level synchronous API (<code>OCREngine</code>). The high-level API is the most
+convenient way to run OCR on an image in a web page. It handles running the OCR
+engine inside a Web Worker to avoid blocking page interaction. The low-level API
+is useful if more control is needed over where/how the code runs and has lower
+latency per API call.</p>
+
+<a href="#using-ocrclient-in-a-web-page" id="using-ocrclient-in-a-web-page" style="color: inherit; text-decoration: none;">
+  <h3>Using OCRClient in a web page</h3>
+</a>
+<pre><code class="language-js"><span class="hl-1">import</span><span class="hl-0"> { </span><span class="hl-2">OCRClient</span><span class="hl-0"> } </span><span class="hl-1">from</span><span class="hl-0"> </span><span class="hl-3">&#39;tesseract-wasm&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-4">async</span><span class="hl-0"> </span><span class="hl-4">function</span><span class="hl-0"> </span><span class="hl-5">runOCR</span><span class="hl-0">() {</span><br/><span class="hl-0">  </span><span class="hl-6">// Fetch document image and decode it into an ImageBitmap.</span><br/><span class="hl-0">  </span><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">imageResponse</span><span class="hl-0"> = </span><span class="hl-1">await</span><span class="hl-0"> </span><span class="hl-5">fetch</span><span class="hl-0">(</span><span class="hl-3">&#39;./test-image.jpg&#39;</span><span class="hl-0">);</span><br/><span class="hl-0">  </span><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">imageBlob</span><span class="hl-0"> = </span><span class="hl-1">await</span><span class="hl-0"> </span><span class="hl-2">imageResponse</span><span class="hl-0">.</span><span class="hl-5">blob</span><span class="hl-0">();</span><br/><span class="hl-0">  </span><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">image</span><span class="hl-0"> = </span><span class="hl-1">await</span><span class="hl-0"> </span><span class="hl-5">createImageBitmap</span><span class="hl-0">(</span><span class="hl-2">image</span><span class="hl-0">);</span><br/><br/><span class="hl-0">  </span><span class="hl-6">// Initialize the OCR engine. This will start a Web Worker to do the</span><br/><span class="hl-0">  </span><span class="hl-6">// work in the background.</span><br/><span class="hl-0">  </span><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">ocr</span><span class="hl-0"> = </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-5">OCRClient</span><span class="hl-0">();</span><br/><br/><span class="hl-0">  </span><span class="hl-1">try</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-6">// Load the appropriate OCR training data for the image(s) we want to</span><br/><span class="hl-0">    </span><span class="hl-6">// process.</span><br/><span class="hl-0">    </span><span class="hl-1">await</span><span class="hl-0"> </span><span class="hl-2">ocr</span><span class="hl-0">.</span><span class="hl-5">loadModel</span><span class="hl-0">(</span><span class="hl-3">&#39;eng.traineddata&#39;</span><span class="hl-0">);</span><br/><br/><span class="hl-0">    </span><span class="hl-1">await</span><span class="hl-0"> </span><span class="hl-2">ocr</span><span class="hl-0">.</span><span class="hl-5">loadImage</span><span class="hl-0">(</span><span class="hl-2">someImage</span><span class="hl-0">);</span><br/><br/><span class="hl-0">    </span><span class="hl-6">// Perform text recognition and return text in reading order.</span><br/><span class="hl-0">    </span><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">text</span><span class="hl-0"> = </span><span class="hl-1">await</span><span class="hl-0"> </span><span class="hl-2">ocr</span><span class="hl-0">.</span><span class="hl-5">getText</span><span class="hl-0">();</span><br/><br/><span class="hl-0">    </span><span class="hl-2">console</span><span class="hl-0">.</span><span class="hl-5">log</span><span class="hl-0">(</span><span class="hl-3">&#39;OCR text: &#39;</span><span class="hl-0">, </span><span class="hl-2">text</span><span class="hl-0">);</span><br/><span class="hl-0">  } </span><span class="hl-1">finally</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-6">// Once all OCR-ing has been done, shut down the Web Worker and free up</span><br/><span class="hl-0">    </span><span class="hl-6">// resources.</span><br/><span class="hl-0">    </span><span class="hl-2">ocr</span><span class="hl-0">.</span><span class="hl-5">destroy</span><span class="hl-0">();</span><br/><span class="hl-0">  }</span><br/><span class="hl-0">}</span><br/><br/><span class="hl-5">runOCR</span><span class="hl-0">();</span>
+</code></pre>
+
+<a href="#examples-and-documentation" id="examples-and-documentation" style="color: inherit; text-decoration: none;">
+  <h2>Examples and documentation</h2>
+</a>
+<p>See the <code>examples/</code> directory for projects that show usage of the library in
+the browser and Node.</p>
+<p>See the <a href="https://robertknight.github.io/tesseract-wasm/api/">API documentation</a>
+for detailed usage information.</p>
+<p>See the Tesseract <a href="https://tesseract-ocr.github.io/tessdoc/">User Manual</a> for
+information on how Tesseract works, as well as advice on <a href="https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html">improving
+recognition</a>.</p>
+
+<a href="#development" id="development" style="color: inherit; text-decoration: none;">
+  <h2>Development</h2>
+</a>
+
+<a href="#prerequisites" id="prerequisites" style="color: inherit; text-decoration: none;">
+  <h3>Prerequisites</h3>
+</a>
+<p>To build this library locally, you will need:</p>
+<ul>
+<li>A C++ build toolchain (eg. via the <code>build-essential</code> package on Ubuntu or Xcode on macOS)</li>
+<li><a href="https://cmake.org">CMake</a></li>
+<li><a href="https://ninja-build.org">Ninja</a></li>
+</ul>
+<p>The <a href="https://emscripten.org">Emscripten</a> toolchain used to compile C++ to
+WebAssembly is downloaded as part of the build process.</p>
+<p>To install CMake and Ninja:</p>
+
+<a href="#on-macos" id="on-macos" style="color: inherit; text-decoration: none;">
+  <h4>On macOS:</h4>
+</a>
+<pre><code><span class="hl-2">brew</span><span class="hl-0"> </span><span class="hl-2">install</span><span class="hl-0"> </span><span class="hl-2">cmake</span><span class="hl-0"> </span><span class="hl-2">ninja</span>
+</code></pre>
+
+<a href="#on-ubuntu" id="on-ubuntu" style="color: inherit; text-decoration: none;">
+  <h4>On Ubuntu</h4>
+</a>
+<pre><code><span class="hl-2">sudo</span><span class="hl-0"> </span><span class="hl-2">apt</span><span class="hl-0">-</span><span class="hl-2">get</span><span class="hl-0"> </span><span class="hl-2">install</span><span class="hl-0"> </span><span class="hl-2">cmake</span><span class="hl-0"> </span><span class="hl-2">ninja</span><span class="hl-0">-</span><span class="hl-2">build</span>
+</code></pre>
+
+<a href="#building-the-library" id="building-the-library" style="color: inherit; text-decoration: none;">
+  <h3>Building the library</h3>
+</a>
+<pre><code class="language-sh"><span class="hl-0">git clone https://github.com/robertknight/tesseract-wasm</span><br/><span class="hl-5">cd</span><span class="hl-0"> tesseract-wasm</span><br/><br/><span class="hl-6"># Build WebAssembly binaries and JS library in dist/ folder</span><br/><span class="hl-0">make lib</span><br/><br/><span class="hl-6"># Run tests</span><br/><span class="hl-0">make </span><span class="hl-5">test</span>
+</code></pre>
+<p>To test your local build of the library with the example projects, or your own
+projects, you can use <a href="https://www.npmjs.com/package/yalc">yalc</a>.</p>
+<pre><code class="language-sh"><span class="hl-6"># In this project</span><br/><span class="hl-0">yalc publish</span><br/><br/><span class="hl-6"># In the project where you want to use your local build of tesseract-wasm</span><br/><span class="hl-0">yalc link tesseract-wasm</span>
+</code></pre>
+</div></div><div class="col-4 col-menu menu-sticky-wrap menu-highlight"><nav class="tsd-navigation primary"><ul><li class="current"><a href="modules.html">Exports</a></li></ul></nav><nav class="tsd-navigation secondary menu-sticky"><ul><li class="tsd-kind-class"><a href="classes/OCRClient.html" class="tsd-kind-icon">OCRClient</a></li><li class="tsd-kind-class"><a href="classes/OCREngine.html" class="tsd-kind-icon">OCREngine</a></li><li class="tsd-kind-type-alias"><a href="modules.html#BoxItem" class="tsd-kind-icon">Box<wbr/>Item</a></li><li class="tsd-kind-type-alias"><a href="modules.html#CreateOCREngineOptions" class="tsd-kind-icon">CreateOCREngine<wbr/>Options</a></li><li class="tsd-kind-type-alias"><a href="modules.html#IntRect" class="tsd-kind-icon">Int<wbr/>Rect</a></li><li class="tsd-kind-type-alias"><a href="modules.html#OCRClientInit" class="tsd-kind-icon">OCRClient<wbr/>Init</a></li><li class="tsd-kind-type-alias"><a href="modules.html#Orientation" class="tsd-kind-icon">Orientation</a></li><li class="tsd-kind-type-alias"><a href="modules.html#ProgressListener" class="tsd-kind-icon">Progress<wbr/>Listener</a></li><li class="tsd-kind-type-alias"><a href="modules.html#TextItem" class="tsd-kind-icon">Text<wbr/>Item</a></li><li class="tsd-kind-type-alias"><a href="modules.html#TextUnit" class="tsd-kind-icon">Text<wbr/>Unit</a></li><li class="tsd-kind-variable"><a href="modules.html#layoutFlags" class="tsd-kind-icon">layout<wbr/>Flags</a></li><li class="tsd-kind-function"><a href="modules.html#createOCREngine" class="tsd-kind-icon">createOCREngine</a></li><li class="tsd-kind-function"><a href="modules.html#supportsFastBuild" class="tsd-kind-icon">supports<wbr/>Fast<wbr/>Build</a></li></ul></nav></div></div></div><footer class="with-border-bottom"><div class="container"><h2>Legend</h2><div class="tsd-legend-group"><ul class="tsd-legend"><li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li><li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li></ul></div><h2>Settings</h2><p>Theme <select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></p></div></footer><div class="container tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script src="assets/main.js"></script></body></html>
