@@ -3,7 +3,6 @@
  */
 export function imageDataFromBitmap(bitmap: ImageBitmap): ImageData {
   let canvas: HTMLCanvasElement;
-  // @ts-expect-error - OffscreenCanvas API is missing
   if (typeof OffscreenCanvas !== "undefined") {
     // @ts-expect-error - OffscreenCanvas API is missing
     canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
