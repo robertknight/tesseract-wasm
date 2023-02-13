@@ -160,7 +160,7 @@ EMCC_FLAGS =\
   -Os\
   --no-entry\
   -sEXPORT_ES6 \
-  -sENVIRONMENT=web \
+  -sENVIRONMENT=web,worker \
   -sFILESYSTEM=0 \
   -sMODULARIZE=1 \
   -sALLOW_MEMORY_GROWTH\
