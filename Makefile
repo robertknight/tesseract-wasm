@@ -160,6 +160,7 @@ EMCC_FLAGS =\
   -Os\
   --no-entry\
   -sEXPORT_ES6 \
+  -sEXPORT_NAME=initTesseractCore \
   -sENVIRONMENT=web \
   -sFILESYSTEM=0 \
   -sMODULARIZE=1 \
