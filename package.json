@@ -24,15 +24,15 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
-    "@rollup/plugin-typescript": "^8.3.2",
+    "@rollup/plugin-typescript": "^11.0.0",
     "@rollup/plugin-virtual": "^2.1.0",
     "chai": "^4.3.6",
     "mocha": "^10.0.0",
     "prettier": "^2.7.1",
     "rollup": "^2.73.0",
     "sharp": "^0.30.4",
-    "typedoc": "^0.22.17",
-    "typescript": "^4.7.4"
+    "typedoc": "^0.23.24",
+    "typescript": "^4.9.5"
   },
   "dependencies": {
     "comlink": "^4.4.1"
