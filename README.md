@@ -74,6 +74,9 @@ async function runOCR() {
 
     await ocr.loadImage(image);
 
+    // Setting for Page Segmentation (Default: PSM_AUTO)
+    // await ocr.loadImage(someImage, { segmentationMode: "PSM_AUTO" });
+
     // Perform text recognition and return text in reading order.
     const text = await ocr.getText();
 
