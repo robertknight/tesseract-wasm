@@ -61,7 +61,7 @@ async function runOCR() {
   // Fetch document image and decode it into an ImageBitmap.
   const imageResponse = await fetch('./test-image.jpg');
   const imageBlob = await imageResponse.blob();
-  const image = await createImageBitmap(image);
+  const image = await createImageBitmap(imageBlob);
 
   // Initialize the OCR engine. This will start a Web Worker to do the
   // work in the background.
@@ -72,7 +72,7 @@ async function runOCR() {
     // process.
     await ocr.loadModel('eng.traineddata');
 
-    await ocr.loadImage(someImage);
+    await ocr.loadImage(image);
 
     // Perform text recognition and return text in reading order.
     const text = await ocr.getText();
