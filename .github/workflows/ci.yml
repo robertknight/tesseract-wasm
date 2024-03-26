@@ -5,16 +5,16 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
-    - name: Cache the node_modules dir
-      uses: actions/cache@v2
+      uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+    - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
       with:
-        path: node_modules
-        key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
+        node-version-file: '.node-version'
+        cache: 'npm'
+        cache-dependency-path: 'package-lock.json'
     - name: Install
       run: |
         sudo apt-get install clang-format ninja-build
-        npm install
+        npm ci
     - name: Build library
       run: make lib
     - name: Build examples
