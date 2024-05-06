@@ -2,14 +2,6 @@ fiff --git a/CMakeLists.txt b/CMakeLists.txt
 index 8c6845cb..fdcfc4a8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -94,6 +94,7 @@
- # see
- # https://stackoverflow.com/questions/52653025/why-is-march-native-used-so-rarely
- option(BUILD_TRAINING_TOOLS "Build training tools" ON)
-+option(BUILD_TESSERACT_BINARY "Build Tesseract binary" ON)
- option(BUILD_TESTS "Build tests" OFF)
- option(USE_SYSTEM_ICU "Use system ICU" OFF)
- option(DISABLE_TIFF "Disable build with libtiff (if available)" OFF)
 @@ -608,9 +609,7 @@
    src/cutil/*.cpp
    src/dict/*.cpp
@@ -35,43 +27,6 @@ index 8c6845cb..fdcfc4a8 100644
 
  set(TESSERACT_CONFIGS
      tessdata/configs/alto
-@@ -899,14 +892,16 @@
- # EXECUTABLE tesseract
- # ##############################################################################
-
--add_executable(tesseract src/tesseract.cpp)
--target_link_libraries(tesseract libtesseract)
--if(HAVE_TIFFIO_H AND WIN32)
--  target_link_libraries(tesseract ${TIFF_LIBRARIES})
--endif()
-+if(BUILD_TESSERACT_BINARY)
-+  add_executable(tesseract src/tesseract.cpp)
-+  target_link_libraries(tesseract libtesseract)
-+  if(HAVE_TIFFIO_H AND WIN32)
-+    target_link_libraries(tesseract ${TIFF_LIBRARIES})
-+  endif()
-
--if(OPENMP_BUILD AND UNIX)
--  target_link_libraries(tesseract pthread)
-+  if(OPENMP_BUILD AND UNIX)
-+    target_link_libraries(tesseract pthread)
-+  endif()
- endif()
-
- # ##############################################################################
-@@ -948,7 +943,11 @@
-   FILES ${CMAKE_CURRENT_BINARY_DIR}/tesseract_$<CONFIG>.pc
-   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
-   RENAME tesseract.pc)
--install(TARGETS tesseract DESTINATION bin)
-+
-+if(BUILD_TESSERACT_BINARY)
-+  install(TARGETS tesseract DESTINATION bin)
-+endif()
-+
- install(
-   TARGETS libtesseract
-   EXPORT TesseractTargets
 diff --git a/src/arch/simddetect.cpp b/src/arch/simddetect.cpp
 index 1afe5a5d..cb8c6d4c 100644
 --- a/src/arch/simddetect.cpp
