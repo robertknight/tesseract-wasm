@@ -30,7 +30,7 @@
     "mocha": "^10.0.0",
     "prettier": "^2.7.1",
     "rollup": "^2.77.0",
-    "sharp": "^0.30.7",
+    "sharp": "0.33.3",
     "tslib": "2.6.2",
     "typedoc": "0.25.13",
     "typescript": "5.4.5"
