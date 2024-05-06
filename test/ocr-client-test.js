@@ -8,7 +8,7 @@ import { loadImage, resolve } from "./util.js";
 async function createClient() {
   const ocr = createOCRClient();
   const model = await readFile(
-    resolve("../third_party/tessdata_fast/eng.traineddata")
+    resolve("../third_party/tessdata_fast/eng.traineddata"),
   );
   await ocr.loadModel(model);
   return ocr;

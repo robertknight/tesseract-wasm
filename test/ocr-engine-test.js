@@ -21,7 +21,7 @@ async function createEngine({
 
   if (loadModel) {
     const model = await readFile(
-      resolve("../third_party/tessdata_fast/eng.traineddata")
+      resolve("../third_party/tessdata_fast/eng.traineddata"),
     );
     ocr.loadModel(model);
   }
@@ -201,11 +201,11 @@ describe("OCREngine", () => {
     assert.equal(lineBoxes.length, 10);
     assert.equal(
       lineBoxes.at(0).text,
-      "Image Thresholding for Optical Character Recognition and\n"
+      "Image Thresholding for Optical Character Recognition and\n",
     );
     assert.equal(
       lineBoxes.at(-1).text,
-      "second is a more aggressive approach directed toward specialized, high-volume applications which justify extra complexity.\n"
+      "second is a more aggressive approach directed toward specialized, high-volume applications which justify extra complexity.\n",
     );
     assert.approximately(mean(lineBoxes.map((b) => b.text.length)), 110, 2);
     assert.approximately(mean(lineBoxes.map((b) => b.confidence)), 0.95, 3);

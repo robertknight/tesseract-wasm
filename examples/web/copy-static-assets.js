@@ -14,6 +14,6 @@ for (let file of files) {
   const rootDir = dirname(fileURLToPath(import.meta.url));
   cpSync(
     `${rootDir}/node_modules/tesseract-wasm/dist/${file}`,
-    `${rootDir}/build/${file}`
+    `${rootDir}/build/${file}`,
   );
 }

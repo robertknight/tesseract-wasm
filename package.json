@@ -28,7 +28,7 @@
     "@rollup/plugin-virtual": "^2.1.0",
     "chai": "^4.3.6",
     "mocha": "^10.0.0",
-    "prettier": "^2.7.1",
+    "prettier": "3.2.5",
     "rollup": "^2.77.0",
     "sharp": "0.33.3",
     "tslib": "2.6.2",

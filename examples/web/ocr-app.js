@@ -151,7 +151,7 @@ function OCRDemoApp() {
         // compression and caching are applied to reduce loading time.
         setStatus("Fetching text recognition model");
         await ocrClient.current.loadModel(
-          "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/eng.traineddata"
+          "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/eng.traineddata",
         );
       }
       const ocr = ocrClient.current;
