@@ -1,16 +1,16 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
+fiff --git a/CMakeLists.txt b/CMakeLists.txt
 index 8c6845cb..fdcfc4a8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -90,6 +90,7 @@ option(ENABLE_LTO "Enable link-time optimization" OFF)
- option(FAST_FLOAT "Enable float for LSTM" ON)
- option(ENABLE_OPENCL "Enable unsupported experimental OpenCL support" OFF)
+@@ -94,6 +94,7 @@
+ # see
+ # https://stackoverflow.com/questions/52653025/why-is-march-native-used-so-rarely
  option(BUILD_TRAINING_TOOLS "Build training tools" ON)
 +option(BUILD_TESSERACT_BINARY "Build Tesseract binary" ON)
  option(BUILD_TESTS "Build tests" OFF)
  option(USE_SYSTEM_ICU "Use system ICU" OFF)
- option(DISABLE_ARCHIVE "Disable build with libarchive (if available)" OFF)
-@@ -565,9 +566,7 @@ file(
+ option(DISABLE_TIFF "Disable build with libtiff (if available)" OFF)
+@@ -608,9 +609,7 @@
    src/cutil/*.cpp
    src/dict/*.cpp
    src/lstm/*.cpp
@@ -18,9 +18,9 @@ index 8c6845cb..fdcfc4a8 100644
    src/textord/*.cpp
 -  src/viewer/*.cpp
    src/wordrec/*.cpp)
- 
+
  if(DISABLED_LEGACY_ENGINE)
-@@ -714,13 +713,7 @@ file(
+@@ -757,13 +756,7 @@
  set(TESSERACT_SRC
      ${TESSERACT_SRC}
      src/api/baseapi.cpp
@@ -32,13 +32,13 @@ index 8c6845cb..fdcfc4a8 100644
 -    src/api/pdfrenderer.cpp
 -    src/api/wordstrboxrenderer.cpp)
 +    src/api/hocrrenderer.cpp)
- 
+
  set(TESSERACT_CONFIGS
-   tessdata/configs/alto
-@@ -858,14 +851,16 @@ endif()
+     tessdata/configs/alto
+@@ -899,14 +892,16 @@
  # EXECUTABLE tesseract
  # ##############################################################################
- 
+
 -add_executable(tesseract src/tesseract.cpp)
 -target_link_libraries(tesseract libtesseract)
 -if(HAVE_TIFFIO_H AND WIN32)
@@ -50,19 +50,19 @@ index 8c6845cb..fdcfc4a8 100644
 +  if(HAVE_TIFFIO_H AND WIN32)
 +    target_link_libraries(tesseract ${TIFF_LIBRARIES})
 +  endif()
- 
+
 -if(OPENMP_BUILD AND UNIX)
 -  target_link_libraries(tesseract pthread)
 +  if(OPENMP_BUILD AND UNIX)
 +    target_link_libraries(tesseract pthread)
 +  endif()
  endif()
- 
+
  # ##############################################################################
-@@ -899,7 +894,11 @@ write_basic_package_version_file(
- 
- install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tesseract.pc
-         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+@@ -948,7 +943,11 @@
+   FILES ${CMAKE_CURRENT_BINARY_DIR}/tesseract_$<CONFIG>.pc
+   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+   RENAME tesseract.pc)
 -install(TARGETS tesseract DESTINATION bin)
 +
 +if(BUILD_TESSERACT_BINARY)
@@ -77,16 +77,16 @@ index 1afe5a5d..cb8c6d4c 100644
 --- a/src/arch/simddetect.cpp
 +++ b/src/arch/simddetect.cpp
 @@ -40,10 +40,12 @@
- 
+
  #endif
- 
+
 +#if !defined(__EMSCRIPTEN__)
  #if defined(HAVE_AVX) || defined(HAVE_AVX2) || defined(HAVE_FMA) || defined(HAVE_SSE4_1)
  // See https://en.wikipedia.org/wiki/CPUID.
  #  define HAS_CPUID
  #endif
 +#endif
- 
+
  #if defined(HAS_CPUID)
  #  if defined(__GNUC__)
 diff --git a/src/ccmain/pageiterator.cpp b/src/ccmain/pageiterator.cpp

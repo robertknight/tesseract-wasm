@@ -11,10 +11,10 @@ jobs:
         node-version-file: '.node-version'
         cache: 'npm'
         cache-dependency-path: 'package-lock.json'
-    - name: Install
-      run: |
-        sudo apt-get install clang-format ninja-build
-        npm ci
+    - name: Install apt deps
+      run: sudo apt-get install clang-format ninja-build
+    - name: Install npm deps
+      run: npm ci
     - name: Build library
       run: make lib
     - name: Build examples
