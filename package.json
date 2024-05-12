@@ -22,7 +22,6 @@
   },
   "homepage": "https://github.com/robertknight/tesseract-wasm#readme",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^22.0.1",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-typescript": "11.1.6",
     "chai": "5.1.0",
