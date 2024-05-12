@@ -25,7 +25,6 @@
     "@rollup/plugin-commonjs": "^22.0.1",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-typescript": "11.1.6",
-    "@rollup/plugin-virtual": "^2.1.0",
     "chai": "5.1.0",
     "mocha": "^10.0.0",
     "prettier": "3.2.5",
