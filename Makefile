@@ -32,7 +32,7 @@ format:
 .PHONY: checkformat
 checkformat:
 	clang-format -Werror --dry-run --style=google src/*.cpp
-	node_modules/.bin/prettier --check {examples,src,test}/**/*.js
+	node_modules/.bin/prettier --check {src,test}/**/*.js
 
 
 .PHONY: typecheck
@@ -45,7 +45,7 @@ api-docs:
 
 .PHONY: test
 test: third_party/tessdata_fast
-	node_modules/.bin/mocha
+	node --test test/ocr-engine-test.js
 
 .PHONY: release
 release: clean lib typecheck test
