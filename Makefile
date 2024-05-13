@@ -187,4 +187,4 @@ dist/tesseract-core-fallback.wasm: build/tesseract-core-fallback.wasm
 	cp $< $@
 
 dist/lib.js: src/*.ts build/tesseract-core.js build/tesseract-core.wasm build/tesseract-core-fallback.wasm
-	node_modules/.bin/rollup -c rollup.config.js
+	node_modules/.bin/esbuild --bundle --sourcemap --format=esm --outfile=$@ src/index.ts

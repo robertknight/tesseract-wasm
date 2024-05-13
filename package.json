@@ -21,12 +21,10 @@
   },
   "homepage": "https://github.com/robertknight/tesseract-wasm#readme",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^13.3.0",
-    "@rollup/plugin-typescript": "11.1.6",
+    "esbuild": "0.21.2",
     "prettier": "3.2.5",
     "rollup": "^2.77.0",
     "sharp": "0.33.3",
-    "tslib": "2.6.2",
     "typedoc": "0.25.13",
     "typescript": "5.4.5"
   },
