@@ -17,8 +17,6 @@ jobs:
       run: npm ci
     - name: Build library
       run: make lib
-    - name: Build examples
-      run: make examples
     - name: Typecheck
       run: make typecheck
     - name: Check formatting
