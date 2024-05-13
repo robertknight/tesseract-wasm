@@ -33,8 +33,8 @@ This Tesseract build has been optimized for use in the browser by:
    npm install tesseract-wasm
    ```
 
-2. Serve the `tesseract-core.wasm`, `tesseract-core-fallback.wasm` and
-   `tesseract-worker.js` files from `node_modules/tesseract-wasm/dist` alongside
+2. Serve the `tesseract-core.wasm` and `tesseract-core-fallback.wasm`
+   files from `node_modules/tesseract-wasm/dist` alongside
    your JavaScript bundle.
 
 3. Get the training data file(s) for the languages you want to support from the

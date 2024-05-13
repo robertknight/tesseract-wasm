@@ -1,7 +1,3 @@
-export { OCRClient } from "./ocr-client";
-
-export type { OCRClientInit } from "./ocr-client";
-
 export { createOCREngine, layoutFlags, supportsFastBuild } from "./ocr-engine";
 
 export type {

@@ -4,19 +4,3 @@ updates:
     directory: /
     schedule:
       interval: daily
-  - package-ecosystem: npm
-    directory: /
-    schedule:
-      interval: daily
-  - package-ecosystem: npm
-    directory: /examples/node-cli
-    schedule:
-      interval: daily
-  - package-ecosystem: npm
-    directory: /examples/node-server
-    schedule:
-      interval: daily
-  - package-ecosystem: npm
-    directory: /examples/web
-    schedule:
-      interval: daily

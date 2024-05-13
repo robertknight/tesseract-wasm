@@ -5,8 +5,7 @@
   "type": "module",
   "main": "./dist/lib.js",
   "exports": {
-    ".": "./dist/lib.js",
-    "./node": "./src/node-worker.js"
+    ".": "./dist/lib.js"
   },
   "scripts": {
     "test": "make test"
@@ -33,12 +32,8 @@
     "typedoc": "0.25.13",
     "typescript": "5.4.5"
   },
-  "dependencies": {
-    "comlink": "^4.4.1"
-  },
   "types": "dist/index.d.ts",
   "files": [
-    "dist/*",
-    "src/node-worker.js"
+    "dist/*"
   ]
 }
