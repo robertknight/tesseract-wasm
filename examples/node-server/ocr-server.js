@@ -1,7 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { createServer } from "node:http";
-import { fileURLToPath } from "node:url";
 
 import fetch from "node-fetch";
 import { createOCRClient } from "tesseract-wasm/node";
