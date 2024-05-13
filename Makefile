@@ -52,10 +52,6 @@ release: clean lib typecheck test
 	@which np || (echo "Install np from https://github.com/sindresorhus/np" && false)
 	np minor
 
-.PHONY: gh-pages
-gh-pages:
-	./update-gh-pages.sh
-
 third_party/emsdk: third_party_versions.mk
 	mkdir -p third_party/emsdk
 	test -d $@/.git || git clone --depth 1 https://github.com/emscripten-core/emsdk.git $@
