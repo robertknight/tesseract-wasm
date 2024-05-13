@@ -26,7 +26,7 @@ build:
 .PHONY: format
 format:
 	clang-format -i --style=google src/*.cpp
-	node_modules/.bin/prettier -w {examples,src,test}/**/*.js
+	node_modules/.bin/prettier -w {src,test}/**/*.js
 	node_modules/.bin/prettier -w src/**/*.ts
 
 .PHONY: checkformat
