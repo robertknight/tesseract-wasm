@@ -1,6 +1,6 @@
 {
   "name": "tesseract-wasm",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "OCR library built on Tesseract",
   "type": "module",
   "main": "./dist/lib.js",
@@ -12,14 +12,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/robertknight/tesseract-wasm.git"
+    "url": "git+https://github.com/wydengyre/tesseract-wasm.git"
   },
   "author": "Robert Knight <robertknight@gmail.com>",
+  "contributors": [
+    {
+      "name": "Matt Leon",
+      "email": "matt@wydengyre.com"
+    }
+  ],
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/robertknight/tesseract-wasm/issues"
+    "url": "https://github.com/wydengyre/tesseract-wasm/issues"
   },
-  "homepage": "https://github.com/robertknight/tesseract-wasm#readme",
+  "homepage": "https://github.com/wydengyre/tesseract-wasm#readme",
   "devDependencies": {
     "esbuild": "0.21.2",
     "prettier": "3.2.5",
