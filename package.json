@@ -29,7 +29,6 @@
   "devDependencies": {
     "esbuild": "0.21.2",
     "prettier": "3.2.5",
-    "rollup": "^2.77.0",
     "sharp": "0.33.3",
     "typedoc": "0.25.13",
     "typescript": "5.4.5"
