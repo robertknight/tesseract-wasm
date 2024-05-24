@@ -34,14 +34,9 @@ checkformat:
 	clang-format -Werror --dry-run --style=google src/*.cpp
 	node_modules/.bin/prettier --check {src,test}/**/*.js
 
-
 .PHONY: typecheck
 typecheck:
 	node_modules/.bin/tsc
-
-.PHONY: api-docs
-api-docs:
-	node_modules/.bin/typedoc --excludePrivate --out docs/api/ src/index.ts
 
 .PHONY: test
 test: third_party/tessdata_fast
