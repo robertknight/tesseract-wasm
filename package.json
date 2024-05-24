@@ -27,9 +27,9 @@
   },
   "homepage": "https://github.com/wydengyre/tesseract-wasm#readme",
   "devDependencies": {
-    "esbuild": "0.21.2",
+    "esbuild": "0.21.3",
     "prettier": "3.2.5",
-    "sharp": "0.33.3",
+    "sharp": "0.33.4",
     "typedoc": "0.25.13",
     "typescript": "5.4.5"
   },
