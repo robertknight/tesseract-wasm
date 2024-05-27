@@ -169,7 +169,7 @@ export class OCREngine {
    * bounding boxes or text content is requested.
    */
   loadImage(image: ImageBitmap | ImageData) {
-    let imageData;
+    let imageData: ImageData;
     if (typeof ImageBitmap !== "undefined" && image instanceof ImageBitmap) {
       imageData = imageDataFromBitmap(image);
     } else {
@@ -380,7 +380,7 @@ export type CreateOCREngineOptions = {
    * used to create the tesseract module. Possible options are documented here:
    * https://github.com/emscripten-core/emscripten/blob/1e7472362a7f5844c5bd23214d725b7a3fd18775/src/settings.js#L876
    */
-  emscriptenModuleOptions?: Object;
+  emscriptenModuleOptions?: {wasmBinary: ArrayBuffer};
 };
 
 /**
