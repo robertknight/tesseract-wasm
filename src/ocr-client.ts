@@ -6,6 +6,7 @@ import type {
   ProgressListener,
   TextItem,
   TextUnit,
+  PageSegMode,
 } from "./ocr-engine";
 
 // Although this import is Node-specific, it is tiny and doesn't import any
@@ -15,6 +16,11 @@ import type {
 import nodeEndpoint from "comlink/dist/esm/node-adapter.mjs";
 
 import { imageDataFromBitmap } from "./utils";
+
+interface LoadImageOptions {
+  segmentationMode: PageSegMode;
+}
+
 
 function defaultWorkerURL() {
   return new URL("./tesseract-worker.js", import.meta.url).href;
@@ -135,7 +141,7 @@ export class OCRClient {
   /**
    * Load an image into the OCR engine for processing.
    */
-  async loadImage(image: ImageBitmap | ImageData): Promise<void> {
+  async loadImage(image: ImageBitmap | ImageData, options: LoadImageOptions = { segmentationMode: "PSM_AUTO" }): Promise<void> {
     // Convert ImageBitmap to ImageData. In browsers that don't support
     // OffscreenCanvas (Firefox and Safari as of 2022-06) we have to do this
     // on the main thread using a canvas. In Chrome, we still do this on the
@@ -146,7 +152,7 @@ export class OCRClient {
       image = imageDataFromBitmap(image);
     }
     const engine = await this._ocrEngine;
-    return engine.loadImage(image);
+    return engine.loadImage(image, options);
   }
 
   /**
