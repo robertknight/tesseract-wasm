@@ -132,6 +132,7 @@ sudo apt-get install cmake ninja-build
 ```sh
 git clone https://github.com/robertknight/tesseract-wasm
 cd tesseract-wasm
+npm ci
 
 # Build WebAssembly binaries and JS library in dist/ folder
 make lib
