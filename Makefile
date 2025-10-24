@@ -73,7 +73,8 @@ build/emsdk.uptodate: third_party/emsdk | build
 LEPTONICA_FLAGS=\
 	-DLIBWEBP_SUPPORT=OFF \
 	-DOPENJPEG_SUPPORT=OFF \
-	-DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
+	-DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) \
+	-DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
 third_party/leptonica: third_party_versions.mk
 	mkdir -p third_party/leptonica
@@ -114,7 +115,8 @@ TESSERACT_FLAGS=\
   -DHAVE_SSE4_1=ON \
   -DLeptonica_DIR=$(INSTALL_DIR)/lib/cmake/leptonica \
   -DCMAKE_CXX_FLAGS="$(TESSERACT_DEFINES) -msimd128" \
-  -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
+  -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) \
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
 # Compile flags for fallback Tesseract build. This is for browsers that don't
 # support WASM SIMD.
