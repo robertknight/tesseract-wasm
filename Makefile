@@ -168,6 +168,7 @@ EMCC_FLAGS =\
   -sALLOW_MEMORY_GROWTH\
   -sMAXIMUM_MEMORY=1GB \
   -std=c++20 \
+  -sDYNAMIC_EXECUTION=0 \
   -fexperimental-library \
   --post-js=src/tesseract-init.js
 
