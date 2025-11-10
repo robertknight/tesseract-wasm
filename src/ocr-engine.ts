@@ -78,6 +78,25 @@ export type Orientation = {
 
 export type TextUnit = "line" | "word";
 
+export type PageSegMode = "PSM_OSD_ONLY" |
+"PSM_AUTO_OSD" |
+"PSM_AUTO_ONLY" |
+"PSM_AUTO" |
+"PSM_SINGLE_COLUMN" |
+"PSM_SINGLE_BLOCK_VERT_TEXT" |
+"PSM_SINGLE_BLOCK" |
+"PSM_SINGLE_LINE" |
+"PSM_SINGLE_WORD" |
+"PSM_CIRCLE_WORD" |
+"PSM_SINGLE_CHAR" |
+"PSM_SPARSE_TEXT" |
+"PSM_SPARSE_TEXT_OSD" |
+"PSM_RAW_LINE";
+
+interface LoadImageOptions {
+  segmentationMode: PageSegMode;
+}
+
 /**
  * Handler that receives OCR operation progress updates.
  */
@@ -168,7 +187,7 @@ export class OCREngine {
    * This is a cheap operation as expensive processing is deferred until
    * bounding boxes or text content is requested.
    */
-  loadImage(image: ImageBitmap | ImageData) {
+  loadImage(image: ImageBitmap | ImageData, options: LoadImageOptions = { segmentationMode: "PSM_AUTO" }) {
     let imageData;
     if (typeof ImageBitmap !== "undefined" && image instanceof ImageBitmap) {
       imageData = imageDataFromBitmap(image);
@@ -183,6 +202,8 @@ export class OCREngine {
     if (imageData.width <= 0 || imageData.height <= 0) {
       throw new Error("Image width or height is zero");
     }
+    // get page segmentation mode
+    const segmentationMode = this._PageSegmentationForPsegmentation(options.segmentationMode);
 
     // Free up resources used by the previous image, if any. Doing this before
     // creating the buffer for the new image reduces peak memory usage.
@@ -199,7 +220,7 @@ export class OCREngine {
 
     // Load the image. This will take a copy of the image within Tesseract, so
     // we can release the original afterwards.
-    const result = this._engine.loadImage(engineImage);
+    const result = this._engine.loadImage(engineImage, segmentationMode);
     engineImage.delete();
 
     if (result.error) {
@@ -333,6 +354,42 @@ export class OCREngine {
         return TextUnit.Line;
       default:
         throw new Error("Invalid text unit");
+    }
+  }
+
+  private _PageSegmentationForPsegmentation(psegmentation: PageSegMode) {
+    const { PageSegMode } = this._tesseractLib;
+    switch (psegmentation) {
+      case "PSM_OSD_ONLY":
+        return PageSegMode.PSM_OSD_ONLY;
+      case "PSM_AUTO_OSD":
+        return PageSegMode.PSM_AUTO_OSD;
+      case "PSM_AUTO_ONLY":
+        return PageSegMode.PSM_AUTO_ONLY;
+      case "PSM_AUTO":
+        return PageSegMode.PSM_AUTO;
+      case "PSM_SINGLE_COLUMN":
+        return PageSegMode.PSM_SINGLE_COLUMN;
+      case "PSM_SINGLE_BLOCK_VERT_TEXT":
+        return PageSegMode.PSM_SINGLE_BLOCK_VERT_TEXT;
+      case "PSM_SINGLE_BLOCK":
+        return PageSegMode.PSM_SINGLE_BLOCK;
+      case "PSM_SINGLE_LINE":
+        return PageSegMode.PSM_SINGLE_LINE;
+      case "PSM_SINGLE_WORD":
+        return PageSegMode.PSM_SINGLE_WORD;
+      case "PSM_CIRCLE_WORD":
+        return PageSegMode.PSM_CIRCLE_WORD;
+      case "PSM_SINGLE_CHAR":
+        return PageSegMode.PSM_SINGLE_CHAR;
+      case "PSM_SPARSE_TEXT":
+        return PageSegMode.PSM_SPARSE_TEXT;
+      case "PSM_SPARSE_TEXT_OSD":
+        return PageSegMode.PSM_SPARSE_TEXT_OSD;
+      case "PSM_RAW_LINE":
+        return PageSegMode.PSM_RAW_LINE;
+      default:
+        throw new Error("Invalid page segmentation mode");
     }
   }
 }
